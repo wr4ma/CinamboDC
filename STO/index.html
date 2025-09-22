@@ -161,7 +161,7 @@
         const statusDiv = document.getElementById('status');
         const fileInput = document.getElementById('fotoAsset');
         
-        // --- LOGIKA SCANNER MODAL (DIREVISI TOTAL) ---
+        // --- LOGIKA SCANNER MODAL (DIREVISI ULANG) ---
         const scannerModal = document.getElementById('scanner-modal');
         const scannerStatus = document.getElementById('scanner-status');
         const scanButtons = document.querySelectorAll('.scan-btn');
@@ -169,51 +169,29 @@
         let html5QrCode = null;
         let currentTargetInput = null;
 
-        // Fungsi baru yang lebih andal untuk memulai pemindai
-        async function showScanner(targetInputId) {
+        function showScanner(targetInputId) {
             currentTargetInput = document.getElementById(targetInputId);
             scannerModal.style.display = "block";
-            scannerStatus.textContent = "Meminta izin kamera...";
-
-            // LANGKAH 1: Minta izin kamera secara eksplisit menggunakan API Browser
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("Fitur kamera tidak didukung di browser ini.");
-                hideScanner();
-                return;
-            }
-
-            try {
-                // Minta stream video hanya untuk memicu pop-up izin
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                // Segera hentikan track agar library bisa mengambil alih kamera
-                stream.getTracks().forEach(track => track.stop());
-            } catch (err) {
-                scannerStatus.textContent = "Izin kamera ditolak.";
-                alert(`IZIN DITOLAK: Anda harus memberikan izin kamera di pengaturan browser untuk menggunakan fitur ini.\n\nError: ${err.name}`);
-                hideScanner();
-                return;
-            }
-
-            // LANGKAH 2: Jika izin berhasil, baru jalankan library pemindai
             scannerStatus.textContent = "Memulai kamera...";
             
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode('scanner-container');
-            }
+            // Inisialisasi ulang pemindai setiap kali untuk memastikan kondisi bersih
+            html5QrCode = new Html5Qrcode('scanner-container');
 
             const config = { 
                 fps: 10, 
                 qrbox: { width: 250, height: 250 }
             };
 
+            // Serahkan permintaan izin dan memulai kamera sepenuhnya ke library
             html5QrCode.start(
-                { facingMode: "environment" },
+                { facingMode: "environment" }, // Minta kamera belakang
                 config,
                 onScanSuccess,
                 onScanFailure
             ).catch(err => {
+                // Blok catch ini akan menangani penolakan izin atau error lainnya
                 scannerStatus.textContent = "Gagal memulai kamera.";
-                alert(`ERROR SAAT MEMULAI: Tidak dapat memulai kamera.\n\nPastikan tidak ada aplikasi lain yang sedang menggunakan kamera.\n\nDetail: ${err}`);
+                alert(`ERROR: Gagal menampilkan video kamera.\n\nPASTIKAN:\n1. Anda telah menekan "Izinkan" pada permintaan kamera.\n2. Tidak ada aplikasi lain yang menggunakan kamera.\n3. Muat ulang halaman dan coba lagi.\n\nDetail: ${err}`);
                 hideScanner();
             });
         }
@@ -226,10 +204,12 @@
         }
 
         function onScanFailure(error) {
+            // Error ini biasanya berarti 'barcode tidak ditemukan', jadi kita bisa abaikan.
             scannerStatus.textContent = "Arahkan kamera ke barcode...";
         }
 
         function hideScanner() {
+            // Pastikan pemindai benar-benar berhenti untuk melepaskan kamera
             if (html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().catch(err => {
                     console.error("Gagal menghentikan pemindai saat ditutup.", err);
