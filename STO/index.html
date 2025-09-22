@@ -50,16 +50,13 @@
         button.scan-btn:hover {
             background-color: #218838;
         }
-        /* Tombol Stop Scan (BARU) */
         #stopScannerBtn {
             background-color: #dc3545;
             margin-top: 10px;
-            display: none; /* Sembunyi secara default */
         }
         #stopScannerBtn:hover {
             background-color: #c82333;
         }
-        /* Kontainer scanner terpusat (BARU) */
         #scanner-container { 
             width: 100%; 
             margin-top: 15px; 
@@ -111,7 +108,6 @@
             <button type="button" class="scan-btn" data-targetinput="deviceId">📷 Scan Device ID</button>
         </div>
         
-        <!-- Kontainer scanner & tombol stop dipindah ke sini -->
         <div id="scanner-wrapper" style="display: none;">
              <div id="scanner-container"></div>
              <button type="button" id="stopScannerBtn">🛑 Stop Scan</button>
@@ -137,57 +133,63 @@
         const statusDiv = document.getElementById('status');
         const fileInput = document.getElementById('fotoAsset');
         
-        // --- LOGIKA SCANNER BARU ---
         const scannerWrapper = document.getElementById('scanner-wrapper');
         const stopScannerBtn = document.getElementById('stopScannerBtn');
         const scanButtons = document.querySelectorAll('.scan-btn');
         let html5QrCode = null;
 
-        // Fungsi untuk menghentikan scanner
         function stopScanner() {
             if (html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().then(() => {
-                    console.log("QR Code scanning is stopped.");
                     scannerWrapper.style.display = 'none';
                 }).catch(err => {
-                    console.error("Failed to stop the scanner.", err);
+                    console.error("Gagal menghentikan pemindai.", err);
                 });
+            } else {
+                 scannerWrapper.style.display = 'none';
             }
         }
 
-        // Fungsi untuk memulai scanner
         function startScanner(targetInputId) {
-            // Pastikan tidak ada scanner lain yang berjalan
             stopScanner();
             
-            // Tampilkan area scanner
-            scannerWrapper.style.display = 'block';
-            stopScannerBtn.style.display = 'block'; // Tampilkan tombol stop
-
             const targetInput = document.getElementById(targetInputId);
-            
-            // Inisialisasi scanner di kontainer
-            html5QrCode = new Html5Qrcode('scanner-container');
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            scannerWrapper.style.display = 'block';
 
-            html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                (decodedText, decodedResult) => {
-                    // Jika scan berhasil
-                    targetInput.value = decodedText;
-                    stopScanner(); // Hentikan scanner secara otomatis
-                },
-                (errorMessage) => {
-                    // Error saat scan, biasanya bisa diabaikan
+            // Langkah 1: Minta izin kamera SEBELUM memulai pemindai.
+            // Ini akan memicu pop-up jika izin belum diberikan.
+            Html5Qrcode.getCameras().then(cameras => {
+                if (cameras && cameras.length) {
+                    // Izin diberikan dan kamera ditemukan.
+                    console.log("Kamera ditemukan, memulai pemindai.");
+
+                    html5QrCode = new Html5Qrcode('scanner-container');
+                    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+                    html5QrCode.start(
+                        { facingMode: "environment" },
+                        config,
+                        (decodedText, decodedResult) => {
+                            targetInput.value = decodedText;
+                            stopScanner();
+                        },
+                        (errorMessage) => { /* Abaikan error 'QR code not found' */ }
+                    ).catch((err) => {
+                        alert(`Tidak dapat memulai pemindai: ${err}`);
+                        stopScanner();
+                    });
+                } else {
+                    alert("Tidak ada kamera yang ditemukan di perangkat ini.");
+                    stopScanner();
                 }
-            ).catch((err) => {
-                alert(`Gagal memulai scanner: ${err}`);
-                stopScanner(); // Hentikan jika gagal memulai
+            }).catch(err => {
+                // Langkah 2: Tangani jika pengguna menolak izin.
+                alert("Izin kamera ditolak. Mohon izinkan akses kamera di pengaturan browser Anda untuk menggunakan fitur ini.");
+                console.error("Gagal mendapatkan izin kamera:", err);
+                stopScanner();
             });
         }
         
-        // Tambahkan event listener ke setiap tombol scan
         scanButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const targetInputId = button.getAttribute('data-targetinput');
@@ -195,11 +197,8 @@
             });
         });
         
-        // Tambahkan event listener ke tombol stop
         stopScannerBtn.addEventListener('click', stopScanner);
 
-
-        // --- LOGIKA FORM SUBMIT (Tidak ada perubahan) ---
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             submitButton.disabled = true;
