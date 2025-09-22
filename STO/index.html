@@ -1,1 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Stock Opname</title>
+    
+    <!-- Library untuk scan barcode -->
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    
+    <style>
+        /* Semua kode CSS ditempatkan di sini */
+        body { 
+            font-family: sans-serif; 
+            max-width: 600px; 
+            margin: auto; 
+            padding: 20px; 
+            background-color: #f4f4f9; 
+        }
+
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+
+        input, select, button { 
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+        }
+
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            cursor: pointer; 
+        }
+
+        button.scan-btn { 
+            background-color: #28a745; 
+            margin-top: 5px; 
+        }
+
+        .scanner-container { 
+            width: 100%; 
+            margin-top: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            overflow: hidden; 
+        }
+
+        #status { 
+            margin-top: 20px; 
+            padding: 10px; 
+            border-radius: 5px; 
+            text-align: center; 
+            display: none; 
+        }
+
+        .success { 
+            background-color: #d4edda; 
+            color: #155724; 
+        }
+
+        .error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 Form Stock Opname</h1>
+    <form id="opnameForm">
+        <div class="form-group">
+            <label for="jenisAsset">Jenis Asset</label>
+            <select id="jenisAsset" name="jenisAsset" required>
+                <option value="">-- Pilih Jenis Asset --</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Monitor">Monitor</option>
+                <option value="PC">PC</option>
+                <option value="Printer">Printer</option>
+                <option value="Lainnya">Lainnya</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="serialNumber">Serial Number</label>
+            <input type="text" id="serialNumber" name="serialNumber" required>
+            <button type="button" class="scan-btn" id="startScannerSN">📷 Scan Serial Number</button>
+            <div id="scanner-container-sn" class="scanner-container"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="deviceId">Device ID</label>
+            <input type="text" id="deviceId" name="deviceId" required>
+            <button type="button" class="scan-btn" id="startScannerDI">📷 Scan Device ID</button>
+            <div id="scanner-container-di" class="scanner-container"></div>
+        </div>
+        
+        <div class="form-group">
+            <label for="fotoAsset">Ambil Foto Asset (dengan Lokasi)</label>
+            <input type="file" id="fotoAsset" accept="image/*" capture required>
+        </div>
+        
+        <button type="submit" id="submitButton">Kirim Data</button>
+    </form>
+    <div id="status"></div>
+
+    <script>
+        // Semua kode JavaScript ditempatkan di sini
+
+        // ==========================================================
+        // KONFIGURASI
+        // GANTI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT ANDA
+        const SCRIPT_URL = "https://script.google.com/macros/s/GANTI_DENGAN_URL_ANDA/exec";
+        // ==========================================================
+
+        const form = document.getElementById('opnameForm');
+        const submitButton = document.getElementById('submitButton');
+        const statusDiv = document.getElementById('status');
+        const fileInput = document.getElementById('fotoAsset');
+        let html5QrCode = null;
+
+        function startScanner(inputId, containerId) {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.error("Gagal menghentikan scanner sebelumnya.", err));
+            }
+
+            const scannerContainer = document.getElementById(containerId);
+            const targetInput = document.getElementById(inputId);
+            html5QrCode = new Html5Qrcode(containerId);
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            scannerContainer.style.display = 'block';
+
+            html5QrCode.start({ facingMode: "environment" }, config,
+                (decodedText, decodedResult) => {
+                    targetInput.value = decodedText;
+                    html5QrCode.stop().then(() => {
+                        scannerContainer.style.display = 'none';
+                    });
+                }, (errorMessage) => {})
+            .catch((err) => {
+                alert("Gagal memulai scanner: " + err);
+            });
+        }
+        
+        document.getElementById('startScannerSN').addEventListener('click', () => startScanner('serialNumber', 'scanner-container-sn'));
+        document.getElementById('startScannerDI').addEventListener('click', () => startScanner('deviceId', 'scanner-container-di'));
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = 'Mengirim...';
+            statusDiv.style.display = 'none';
+
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Silakan ambil foto aset terlebih dahulu.');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Kirim Data';
+                return;
+            }
+            addTimestampAndLocationAndUpload(file);
+        });
+
+        function getGeoLocation() {
+            return new Promise((resolve) => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            resolve(`${lat.toFixed(5)}, ${lon.toFixed(5)}`);
+                        },
+                        (error) => {
+                            console.error("Geolocation error: ", error.message);
+                            resolve("Lokasi tidak diizinkan");
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                } else {
+                    resolve("Geolocation tidak didukung");
+                }
+            });
+        }
+        
+        async function addTimestampAndLocationAndUpload(file) {
+            submitButton.textContent = 'Mendapatkan lokasi...';
+            const location = await getGeoLocation();
+            
+            submitButton.textContent = 'Memproses gambar...';
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+
+                    const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+                    ctx.font = "bold 40px Arial";
+                    ctx.fillStyle = "rgba(255, 255, 0, 0.9)";
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "bottom";
+                    
+                    ctx.fillText(location, canvas.width - 20, canvas.height - 70);
+                    ctx.fillText(timestamp, canvas.width - 20, canvas.height - 20);
+
+                    const base64Data = canvas.toDataURL(file.type);
+                    
+                    const formData = {
+                        jenisAsset: document.getElementById('jenisAsset').value,
+                        serialNumber: document.getElementById('serialNumber').value,
+                        deviceId: document.getElementById('deviceId').value,
+                        lokasi: location,
+                        fileData: base64Data,
+                        mimeType: file.type,
+                        fileName: `asset_${Date.now()}.${file.name.split('.').pop()}`
+                    };
+
+                    fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: new URLSearchParams(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            statusDiv.textContent = data.message;
+                            statusDiv.className = 'success';
+                            form.reset();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        statusDiv.textContent = 'Terjadi kesalahan: ' + error.message;
+                        statusDiv.className = 'error';
+                    })
+                    .finally(() => {
+                        statusDiv.style.display = 'block';
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Kirim Data';
+                    });
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
+
 
