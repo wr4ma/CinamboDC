@@ -9,7 +9,6 @@
     <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
     
     <style>
-        /* Semua kode CSS ditempatkan di sini */
         body { 
             font-family: sans-serif; 
             max-width: 600px; 
@@ -17,17 +16,14 @@
             padding: 20px; 
             background-color: #f4f4f9; 
         }
-
         .form-group { 
             margin-bottom: 20px; 
         }
-
         label { 
             display: block; 
             margin-bottom: 5px; 
             font-weight: bold; 
         }
-
         input, select, button { 
             width: 100%; 
             padding: 10px; 
@@ -36,26 +32,23 @@
             box-sizing: border-box; 
             font-size: 16px; 
         }
-
         button { 
             background-color: #007bff; 
             color: white; 
             cursor: pointer; 
         }
-
         button.scan-btn { 
             background-color: #28a745; 
             margin-top: 5px; 
         }
-
         .scanner-container { 
             width: 100%; 
             margin-top: 10px; 
             border: 1px solid #ddd; 
             border-radius: 5px; 
             overflow: hidden; 
+            display: none; /* Disembunyikan secara default */
         }
-
         #status { 
             margin-top: 20px; 
             padding: 10px; 
@@ -63,12 +56,10 @@
             text-align: center; 
             display: none; 
         }
-
         .success { 
             background-color: #d4edda; 
             color: #155724; 
         }
-
         .error { 
             background-color: #f8d7da; 
             color: #721c24; 
@@ -105,7 +96,7 @@
         </div>
         
         <div class="form-group">
-            <label for="fotoAsset">Ambil Foto Asset (dengan Lokasi)</label>
+            <label for="fotoAsset">Ambil Foto Asset</label>
             <input type="file" id="fotoAsset" accept="image/*" capture required>
         </div>
         
@@ -114,12 +105,10 @@
     <div id="status"></div>
 
     <script>
-        // Semua kode JavaScript ditempatkan di sini
-
         // ==========================================================
         // KONFIGURASI
         // GANTI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT ANDA
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLCiitFsYpr_v_l2VJKVBwJTl-SC9OJBjiXMsezQyXnGb3OsAAc7bLsHub5UoPQn6RMg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQeII5TGecdXJV7VjzdANcBzF8YS6y51ZnWyEa978VxKvoDjya2PSqgSWXDdHBOrl4sA/exec";
         // ==========================================================
 
         const form = document.getElementById('opnameForm');
@@ -137,17 +126,21 @@
             const targetInput = document.getElementById(inputId);
             html5QrCode = new Html5Qrcode(containerId);
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            // Tampilkan kontainer scanner sebelum memulai kamera
             scannerContainer.style.display = 'block';
 
             html5QrCode.start({ facingMode: "environment" }, config,
                 (decodedText, decodedResult) => {
                     targetInput.value = decodedText;
                     html5QrCode.stop().then(() => {
+                        // Sembunyikan kembali kontainer setelah scan berhasil
                         scannerContainer.style.display = 'none';
                     });
                 }, (errorMessage) => {})
             .catch((err) => {
                 alert("Gagal memulai scanner: " + err);
+                scannerContainer.style.display = 'none';
             });
         }
         
@@ -167,34 +160,10 @@
                 submitButton.textContent = 'Kirim Data';
                 return;
             }
-            addTimestampAndLocationAndUpload(file);
+            addTimestampAndUpload(file);
         });
-
-        function getGeoLocation() {
-            return new Promise((resolve) => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const lat = position.coords.latitude;
-                            const lon = position.coords.longitude;
-                            resolve(`${lat.toFixed(5)}, ${lon.toFixed(5)}`);
-                        },
-                        (error) => {
-                            console.error("Geolocation error: ", error.message);
-                            resolve("Lokasi tidak diizinkan");
-                        },
-                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                    );
-                } else {
-                    resolve("Geolocation tidak didukung");
-                }
-            });
-        }
         
-        async function addTimestampAndLocationAndUpload(file) {
-            submitButton.textContent = 'Mendapatkan lokasi...';
-            const location = await getGeoLocation();
-            
+        function addTimestampAndUpload(file) {
             submitButton.textContent = 'Memproses gambar...';
 
             const reader = new FileReader();
@@ -213,7 +182,6 @@
                     ctx.textAlign = "right";
                     ctx.textBaseline = "bottom";
                     
-                    ctx.fillText(location, canvas.width - 20, canvas.height - 70);
                     ctx.fillText(timestamp, canvas.width - 20, canvas.height - 20);
 
                     const base64Data = canvas.toDataURL(file.type);
@@ -222,7 +190,6 @@
                         jenisAsset: document.getElementById('jenisAsset').value,
                         serialNumber: document.getElementById('serialNumber').value,
                         deviceId: document.getElementById('deviceId').value,
-                        lokasi: location,
                         fileData: base64Data,
                         mimeType: file.type,
                         fileName: `asset_${Date.now()}.${file.name.split('.').pop()}`
@@ -259,5 +226,4 @@
     </script>
 </body>
 </html>
-
 
