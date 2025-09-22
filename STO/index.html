@@ -66,7 +66,7 @@
             color: #721c24; 
         }
 
-        /* --- Gaya untuk Modal Scanner (BARU) --- */
+        /* --- Gaya untuk Modal Scanner --- */
         #scanner-modal {
             display: none;
             position: fixed;
@@ -140,7 +140,7 @@
     </form>
     <div id="status"></div>
 
-    <!-- Modal untuk Scanner (Struktur HTML BARU) -->
+    <!-- Modal untuk Scanner -->
     <div id="scanner-modal">
         <div id="scanner-modal-content">
             <h3>Pindai Barcode</h3>
@@ -161,7 +161,7 @@
         const statusDiv = document.getElementById('status');
         const fileInput = document.getElementById('fotoAsset');
         
-        // --- LOGIKA SCANNER MODAL (BARU & DIrombak) ---
+        // --- LOGIKA SCANNER MODAL (DIREVISI TOTAL) ---
         const scannerModal = document.getElementById('scanner-modal');
         const scannerStatus = document.getElementById('scanner-status');
         const scanButtons = document.querySelectorAll('.scan-btn');
@@ -169,24 +169,41 @@
         let html5QrCode = null;
         let currentTargetInput = null;
 
-        function showScanner(targetInputId) {
+        // Fungsi baru yang lebih andal untuk memulai pemindai
+        async function showScanner(targetInputId) {
             currentTargetInput = document.getElementById(targetInputId);
             scannerModal.style.display = "block";
-            scannerStatus.textContent = "Memulai kamera...";
+            scannerStatus.textContent = "Meminta izin kamera...";
 
-            // Fungsi ini memastikan inisialisasi hanya terjadi sekali
+            // LANGKAH 1: Minta izin kamera secara eksplisit menggunakan API Browser
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Fitur kamera tidak didukung di browser ini.");
+                hideScanner();
+                return;
+            }
+
+            try {
+                // Minta stream video hanya untuk memicu pop-up izin
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                // Segera hentikan track agar library bisa mengambil alih kamera
+                stream.getTracks().forEach(track => track.stop());
+            } catch (err) {
+                scannerStatus.textContent = "Izin kamera ditolak.";
+                alert(`IZIN DITOLAK: Anda harus memberikan izin kamera di pengaturan browser untuk menggunakan fitur ini.\n\nError: ${err.name}`);
+                hideScanner();
+                return;
+            }
+
+            // LANGKAH 2: Jika izin berhasil, baru jalankan library pemindai
+            scannerStatus.textContent = "Memulai kamera...";
+            
             if (!html5QrCode) {
                 html5QrCode = new Html5Qrcode('scanner-container');
             }
 
             const config = { 
                 fps: 10, 
-                qrbox: (viewfinderWidth, viewfinderHeight) => {
-                    // Membuat qrbox responsif
-                    let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                    let qrboxSize = Math.floor(minEdge * 0.7);
-                    return { width: qrboxSize, height: qrboxSize };
-                }
+                qrbox: { width: 250, height: 250 }
             };
 
             html5QrCode.start(
@@ -196,12 +213,12 @@
                 onScanFailure
             ).catch(err => {
                 scannerStatus.textContent = "Gagal memulai kamera.";
-                alert(`ERROR: Tidak dapat memulai kamera.\n\nPastikan Anda menggunakan HTTPS dan telah memberikan izin akses kamera untuk situs ini.\n\nDetail: ${err}`);
+                alert(`ERROR SAAT MEMULAI: Tidak dapat memulai kamera.\n\nPastikan tidak ada aplikasi lain yang sedang menggunakan kamera.\n\nDetail: ${err}`);
+                hideScanner();
             });
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            console.log(`Scan berhasil: ${decodedText}`);
             if (currentTargetInput) {
                 currentTargetInput.value = decodedText;
             }
@@ -209,16 +226,13 @@
         }
 
         function onScanFailure(error) {
-            // Error ini biasanya berarti 'barcode tidak ditemukan', jadi kita bisa abaikan.
             scannerStatus.textContent = "Arahkan kamera ke barcode...";
         }
 
         function hideScanner() {
             if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    console.log("Pemindai dihentikan.");
-                }).catch(err => {
-                    console.error("Gagal menghentikan pemindai.", err);
+                html5QrCode.stop().catch(err => {
+                    console.error("Gagal menghentikan pemindai saat ditutup.", err);
                 });
             }
             scannerModal.style.display = "none";
@@ -252,7 +266,6 @@
         
         function addTimestampAndUpload(file) {
             submitButton.textContent = 'Memproses gambar...';
-
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
@@ -262,17 +275,13 @@
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
-
                     const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
                     ctx.font = "bold 40px Arial";
                     ctx.fillStyle = "rgba(255, 255, 0, 0.9)";
                     ctx.textAlign = "right";
                     ctx.textBaseline = "bottom";
-                    
                     ctx.fillText(timestamp, canvas.width - 20, canvas.height - 20);
-
                     const base64Data = canvas.toDataURL(file.type);
-                    
                     const formData = {
                         jenisAsset: document.getElementById('jenisAsset').value,
                         serialNumber: document.getElementById('serialNumber').value,
@@ -281,7 +290,6 @@
                         mimeType: file.type,
                         fileName: `asset_${Date.now()}.${file.name.split('.').pop()}`
                     };
-
                     fetch(SCRIPT_URL, {
                         method: 'POST',
                         body: new URLSearchParams(formData)
