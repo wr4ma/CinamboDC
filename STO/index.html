@@ -50,27 +50,6 @@
         button.scan-btn:hover {
             background-color: #218838;
         }
-        #stopScannerBtn {
-            background-color: #dc3545;
-            margin-top: 10px;
-        }
-        #stopScannerBtn:hover {
-            background-color: #c82333;
-        }
-        #scanner-container { 
-            width: 100%; 
-            margin-top: 15px; 
-            border: 2px dashed #ccc; 
-            border-radius: 8px; 
-            overflow: hidden; 
-        }
-        /* Style untuk pesan peringatan (BARU) */
-        .scanner-warning {
-            font-size: 12px;
-            color: #6c757d;
-            text-align: center;
-            margin-top: 5px;
-        }
         #status { 
             margin-top: 20px; 
             padding: 10px; 
@@ -86,6 +65,43 @@
             background-color: #f8d7da; 
             color: #721c24; 
         }
+
+        /* --- Gaya untuk Modal Scanner (BARU) --- */
+        #scanner-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+        #scanner-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #scanner-container {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        #scanner-status {
+            margin: 10px 0;
+            color: #555;
+        }
+        #close-scanner-btn {
+            background-color: #dc3545;
+            margin-top: 15px;
+        }
+
     </style>
 </head>
 <body>
@@ -114,13 +130,6 @@
             <input type="text" id="deviceId" name="deviceId" required>
             <button type="button" class="scan-btn" data-targetinput="deviceId">📷 Scan Device ID</button>
         </div>
-        
-        <div id="scanner-wrapper" style="display: none;">
-             <div id="scanner-container"></div>
-             <!-- Pesan peringatan BARU -->
-             <p class="scanner-warning">Pastikan situs ini berjalan di HTTPS untuk menggunakan kamera.</p>
-             <button type="button" id="stopScannerBtn">🛑 Stop Scan</button>
-        </div>
 
         <div class="form-group">
             <label for="fotoAsset">Ambil Foto Asset</label>
@@ -130,6 +139,16 @@
         <button type="submit" id="submitButton">Kirim Data</button>
     </form>
     <div id="status"></div>
+
+    <!-- Modal untuk Scanner (Struktur HTML BARU) -->
+    <div id="scanner-modal">
+        <div id="scanner-modal-content">
+            <h3>Pindai Barcode</h3>
+            <div id="scanner-container"></div>
+            <p id="scanner-status">Mempersiapkan kamera...</p>
+            <button id="close-scanner-btn">Tutup</button>
+        </div>
+    </div>
 
     <script>
         // ==========================================================
@@ -142,65 +161,79 @@
         const statusDiv = document.getElementById('status');
         const fileInput = document.getElementById('fotoAsset');
         
-        const scannerWrapper = document.getElementById('scanner-wrapper');
-        const stopScannerBtn = document.getElementById('stopScannerBtn');
+        // --- LOGIKA SCANNER MODAL (BARU & DIrombak) ---
+        const scannerModal = document.getElementById('scanner-modal');
+        const scannerStatus = document.getElementById('scanner-status');
         const scanButtons = document.querySelectorAll('.scan-btn');
+        const closeScannerBtn = document.getElementById('close-scanner-btn');
         let html5QrCode = null;
+        let currentTargetInput = null;
 
-        function stopScanner() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => {
-                    scannerWrapper.style.display = 'none';
-                }).catch(err => {
-                    console.error("Gagal menghentikan pemindai.", err);
-                    scannerWrapper.style.display = 'none';
-                });
-            } else {
-                 scannerWrapper.style.display = 'none';
+        function showScanner(targetInputId) {
+            currentTargetInput = document.getElementById(targetInputId);
+            scannerModal.style.display = "block";
+            scannerStatus.textContent = "Memulai kamera...";
+
+            // Fungsi ini memastikan inisialisasi hanya terjadi sekali
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode('scanner-container');
             }
-        }
 
-        // --- LOGIKA SCANNER YANG DIPERBARUI ---
-        function startScanner(targetInputId) {
-            stopScanner(); // Hentikan pemindai lain jika ada
-
-            const targetInput = document.getElementById(targetInputId);
-            scannerWrapper.style.display = 'block';
-
-            // Inisialisasi pemindai
-            html5QrCode = new Html5Qrcode('scanner-container');
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-
-            // Langsung mulai pemindai. Metode ini akan menangani izin kamera.
-            html5QrCode.start(
-                { facingMode: "environment" }, // Minta kamera belakang
-                config,
-                (decodedText, decodedResult) => {
-                    // Callback jika berhasil memindai
-                    console.log(`Scan berhasil: ${decodedText}`);
-                    targetInput.value = decodedText;
-                    stopScanner();
-                },
-                (errorMessage) => {
-                    // Callback jika ada error parsing, bisa diabaikan.
+            const config = { 
+                fps: 10, 
+                qrbox: (viewfinderWidth, viewfinderHeight) => {
+                    // Membuat qrbox responsif
+                    let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    let qrboxSize = Math.floor(minEdge * 0.7);
+                    return { width: qrboxSize, height: qrboxSize };
                 }
-            ).catch((err) => {
-                // Blok catch ini SANGAT PENTING untuk debugging.
-                console.error(`Tidak dapat memulai pemindaian, error: ${err}`);
-                alert(`Gagal memulai kamera.\n\nPASTIKAN:\n1. Anda membuka situs ini melalui link HTTPS (bukan file lokal).\n2. Anda telah MEMBERIKAN IZIN kamera untuk situs ini di pengaturan browser Anda.\n\nPesan Error: ${err}`);
-                stopScanner();
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                scannerStatus.textContent = "Gagal memulai kamera.";
+                alert(`ERROR: Tidak dapat memulai kamera.\n\nPastikan Anda menggunakan HTTPS dan telah memberikan izin akses kamera untuk situs ini.\n\nDetail: ${err}`);
             });
         }
-        
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan berhasil: ${decodedText}`);
+            if (currentTargetInput) {
+                currentTargetInput.value = decodedText;
+            }
+            hideScanner();
+        }
+
+        function onScanFailure(error) {
+            // Error ini biasanya berarti 'barcode tidak ditemukan', jadi kita bisa abaikan.
+            scannerStatus.textContent = "Arahkan kamera ke barcode...";
+        }
+
+        function hideScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    console.log("Pemindai dihentikan.");
+                }).catch(err => {
+                    console.error("Gagal menghentikan pemindai.", err);
+                });
+            }
+            scannerModal.style.display = "none";
+        }
+
         scanButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const targetInputId = button.getAttribute('data-targetinput');
-                startScanner(targetInputId);
+                showScanner(targetInputId);
             });
         });
-        
-        stopScannerBtn.addEventListener('click', stopScanner);
 
+        closeScannerBtn.addEventListener('click', hideScanner);
+
+        // --- LOGIKA FORM SUBMIT (Tidak ada perubahan) ---
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             submitButton.disabled = true;
