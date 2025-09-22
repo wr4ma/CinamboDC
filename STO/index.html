@@ -111,10 +111,12 @@
             <label for="jenisAsset">Jenis Asset</label>
             <select id="jenisAsset" name="jenisAsset" required>
                 <option value="">-- Pilih Jenis Asset --</option>
-                <option value="Laptop">Laptop</option>
-                <option value="Monitor">Monitor</option>
-                <option value="PC">PC</option>
+                <option value="PDA">PDA</option>
                 <option value="Printer">Printer</option>
+                <option value="Printer Thermal">Printer Thermal</option>
+                <option value="Laptop">Laptop</option>
+                <option value="Handheld Scanner">Handheld Scanner</option>
+                <option value="PC Desktop">PC Desktop</option>
                 <option value="Lainnya">Lainnya</option>
             </select>
         </div>
@@ -123,12 +125,6 @@
             <label for="serialNumber">Serial Number</label>
             <input type="text" id="serialNumber" name="serialNumber" required>
             <button type="button" class="scan-btn" data-targetinput="serialNumber">📷 Scan Serial Number</button>
-        </div>
-
-        <div class="form-group">
-            <label for="deviceId">Device ID</label>
-            <input type="text" id="deviceId" name="deviceId" required>
-            <button type="button" class="scan-btn" data-targetinput="deviceId">📷 Scan Device ID</button>
         </div>
 
         <div class="form-group">
@@ -153,7 +149,7 @@
     <script>
         // ==========================================================
         // KONFIGURASI
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQeII5TGecdXJV7VjzdANcBzF8YS6y51ZnWyEa978VxKvoDjya2PSqgSWXDdHBOrl4sA/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxhaZ9zB33CYdxca-0yNjk8qs17fhDLYaPQcevt75mG7ZOE6SonKKHnuc4CtecuKgcwMg/exec";
         // ==========================================================
 
         const form = document.getElementById('opnameForm');
@@ -161,7 +157,6 @@
         const statusDiv = document.getElementById('status');
         const fileInput = document.getElementById('fotoAsset');
         
-        // --- LOGIKA SCANNER MODAL (DIREVISI ULANG) ---
         const scannerModal = document.getElementById('scanner-modal');
         const scannerStatus = document.getElementById('scanner-status');
         const scanButtons = document.querySelectorAll('.scan-btn');
@@ -174,7 +169,6 @@
             scannerModal.style.display = "block";
             scannerStatus.textContent = "Memulai kamera...";
             
-            // Inisialisasi ulang pemindai setiap kali untuk memastikan kondisi bersih
             html5QrCode = new Html5Qrcode('scanner-container');
 
             const config = { 
@@ -182,14 +176,12 @@
                 qrbox: { width: 250, height: 250 }
             };
 
-            // Serahkan permintaan izin dan memulai kamera sepenuhnya ke library
             html5QrCode.start(
-                { facingMode: "environment" }, // Minta kamera belakang
+                { facingMode: "environment" },
                 config,
                 onScanSuccess,
                 onScanFailure
             ).catch(err => {
-                // Blok catch ini akan menangani penolakan izin atau error lainnya
                 scannerStatus.textContent = "Gagal memulai kamera.";
                 alert(`ERROR: Gagal menampilkan video kamera.\n\nPASTIKAN:\n1. Anda telah menekan "Izinkan" pada permintaan kamera.\n2. Tidak ada aplikasi lain yang menggunakan kamera.\n3. Muat ulang halaman dan coba lagi.\n\nDetail: ${err}`);
                 hideScanner();
@@ -204,12 +196,10 @@
         }
 
         function onScanFailure(error) {
-            // Error ini biasanya berarti 'barcode tidak ditemukan', jadi kita bisa abaikan.
             scannerStatus.textContent = "Arahkan kamera ke barcode...";
         }
 
         function hideScanner() {
-            // Pastikan pemindai benar-benar berhenti untuk melepaskan kamera
             if (html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().catch(err => {
                     console.error("Gagal menghentikan pemindai saat ditutup.", err);
@@ -227,7 +217,6 @@
 
         closeScannerBtn.addEventListener('click', hideScanner);
 
-        // --- LOGIKA FORM SUBMIT (Tidak ada perubahan) ---
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             submitButton.disabled = true;
@@ -255,21 +244,33 @@
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
+
                     const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-                    ctx.font = "bold 40px Arial";
-                    ctx.fillStyle = "rgba(255, 255, 0, 0.9)";
-                    ctx.textAlign = "right";
+                    
+                    // --- PERUBAHAN TIMESTAMP DI SINI ---
+                    const fontSize = Math.max(60, canvas.width * 0.04); // Ukuran font responsif, minimal 60px
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.fillStyle = "rgba(255, 255, 0, 0.9)"; // Kuning terang
+                    ctx.textAlign = "left"; // Posisi teks di kiri
                     ctx.textBaseline = "bottom";
-                    ctx.fillText(timestamp, canvas.width - 20, canvas.height - 20);
+
+                    // Beri sedikit bayangan agar teks lebih terbaca
+                    ctx.shadowColor = 'black';
+                    ctx.shadowBlur = 7;
+
+                    ctx.fillText(timestamp, 25, canvas.height - 25); // Posisi di kiri bawah
+                    // ======================================
+
                     const base64Data = canvas.toDataURL(file.type);
+                    
                     const formData = {
                         jenisAsset: document.getElementById('jenisAsset').value,
                         serialNumber: document.getElementById('serialNumber').value,
-                        deviceId: document.getElementById('deviceId').value,
                         fileData: base64Data,
                         mimeType: file.type,
                         fileName: `asset_${Date.now()}.${file.name.split('.').pop()}`
                     };
+
                     fetch(SCRIPT_URL, {
                         method: 'POST',
                         body: new URLSearchParams(formData)
