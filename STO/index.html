@@ -10,7 +10,7 @@
     
     <style>
         body { 
-            font-family: sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             max-width: 600px; 
             margin: auto; 
             padding: 20px; 
@@ -23,11 +23,12 @@
             display: block; 
             margin-bottom: 5px; 
             font-weight: bold; 
+            color: #333;
         }
         input, select, button { 
             width: 100%; 
-            padding: 10px; 
-            border-radius: 5px; 
+            padding: 12px; 
+            border-radius: 8px; 
             border: 1px solid #ccc; 
             box-sizing: border-box; 
             font-size: 16px; 
@@ -36,18 +37,35 @@
             background-color: #007bff; 
             color: white; 
             cursor: pointer; 
+            border: none;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
         button.scan-btn { 
             background-color: #28a745; 
             margin-top: 5px; 
         }
-        .scanner-container { 
+        button.scan-btn:hover {
+            background-color: #218838;
+        }
+        /* Tombol Stop Scan (BARU) */
+        #stopScannerBtn {
+            background-color: #dc3545;
+            margin-top: 10px;
+            display: none; /* Sembunyi secara default */
+        }
+        #stopScannerBtn:hover {
+            background-color: #c82333;
+        }
+        /* Kontainer scanner terpusat (BARU) */
+        #scanner-container { 
             width: 100%; 
-            margin-top: 10px; 
-            border: 1px solid #ddd; 
-            border-radius: 5px; 
+            margin-top: 15px; 
+            border: 2px dashed #ccc; 
+            border-radius: 8px; 
             overflow: hidden; 
-            display: none; /* Disembunyikan secara default */
         }
         #status { 
             margin-top: 20px; 
@@ -84,17 +102,21 @@
         <div class="form-group">
             <label for="serialNumber">Serial Number</label>
             <input type="text" id="serialNumber" name="serialNumber" required>
-            <button type="button" class="scan-btn" id="startScannerSN">📷 Scan Serial Number</button>
-            <div id="scanner-container-sn" class="scanner-container"></div>
+            <button type="button" class="scan-btn" data-targetinput="serialNumber">📷 Scan Serial Number</button>
         </div>
 
         <div class="form-group">
             <label for="deviceId">Device ID</label>
             <input type="text" id="deviceId" name="deviceId" required>
-            <button type="button" class="scan-btn" id="startScannerDI">📷 Scan Device ID</button>
-            <div id="scanner-container-di" class="scanner-container"></div>
+            <button type="button" class="scan-btn" data-targetinput="deviceId">📷 Scan Device ID</button>
         </div>
         
+        <!-- Kontainer scanner & tombol stop dipindah ke sini -->
+        <div id="scanner-wrapper" style="display: none;">
+             <div id="scanner-container"></div>
+             <button type="button" id="stopScannerBtn">🛑 Stop Scan</button>
+        </div>
+
         <div class="form-group">
             <label for="fotoAsset">Ambil Foto Asset</label>
             <input type="file" id="fotoAsset" accept="image/*" capture required>
@@ -107,7 +129,6 @@
     <script>
         // ==========================================================
         // KONFIGURASI
-        // GANTI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT ANDA
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQeII5TGecdXJV7VjzdANcBzF8YS6y51ZnWyEa978VxKvoDjya2PSqgSWXDdHBOrl4sA/exec";
         // ==========================================================
 
@@ -115,38 +136,70 @@
         const submitButton = document.getElementById('submitButton');
         const statusDiv = document.getElementById('status');
         const fileInput = document.getElementById('fotoAsset');
+        
+        // --- LOGIKA SCANNER BARU ---
+        const scannerWrapper = document.getElementById('scanner-wrapper');
+        const stopScannerBtn = document.getElementById('stopScannerBtn');
+        const scanButtons = document.querySelectorAll('.scan-btn');
         let html5QrCode = null;
 
-        function startScanner(inputId, containerId) {
+        // Fungsi untuk menghentikan scanner
+        function stopScanner() {
             if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().catch(err => console.error("Gagal menghentikan scanner sebelumnya.", err));
+                html5QrCode.stop().then(() => {
+                    console.log("QR Code scanning is stopped.");
+                    scannerWrapper.style.display = 'none';
+                }).catch(err => {
+                    console.error("Failed to stop the scanner.", err);
+                });
             }
+        }
 
-            const scannerContainer = document.getElementById(containerId);
-            const targetInput = document.getElementById(inputId);
-            html5QrCode = new Html5Qrcode(containerId);
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        // Fungsi untuk memulai scanner
+        function startScanner(targetInputId) {
+            // Pastikan tidak ada scanner lain yang berjalan
+            stopScanner();
             
-            // Tampilkan kontainer scanner sebelum memulai kamera
-            scannerContainer.style.display = 'block';
+            // Tampilkan area scanner
+            scannerWrapper.style.display = 'block';
+            stopScannerBtn.style.display = 'block'; // Tampilkan tombol stop
 
-            html5QrCode.start({ facingMode: "environment" }, config,
+            const targetInput = document.getElementById(targetInputId);
+            
+            // Inisialisasi scanner di kontainer
+            html5QrCode = new Html5Qrcode('scanner-container');
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
                 (decodedText, decodedResult) => {
+                    // Jika scan berhasil
                     targetInput.value = decodedText;
-                    html5QrCode.stop().then(() => {
-                        // Sembunyikan kembali kontainer setelah scan berhasil
-                        scannerContainer.style.display = 'none';
-                    });
-                }, (errorMessage) => {})
-            .catch((err) => {
-                alert("Gagal memulai scanner: " + err);
-                scannerContainer.style.display = 'none';
+                    stopScanner(); // Hentikan scanner secara otomatis
+                },
+                (errorMessage) => {
+                    // Error saat scan, biasanya bisa diabaikan
+                }
+            ).catch((err) => {
+                alert(`Gagal memulai scanner: ${err}`);
+                stopScanner(); // Hentikan jika gagal memulai
             });
         }
         
-        document.getElementById('startScannerSN').addEventListener('click', () => startScanner('serialNumber', 'scanner-container-sn'));
-        document.getElementById('startScannerDI').addEventListener('click', () => startScanner('deviceId', 'scanner-container-di'));
+        // Tambahkan event listener ke setiap tombol scan
+        scanButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetInputId = button.getAttribute('data-targetinput');
+                startScanner(targetInputId);
+            });
+        });
+        
+        // Tambahkan event listener ke tombol stop
+        stopScannerBtn.addEventListener('click', stopScanner);
 
+
+        // --- LOGIKA FORM SUBMIT (Tidak ada perubahan) ---
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             submitButton.disabled = true;
