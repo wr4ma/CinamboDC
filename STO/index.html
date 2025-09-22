@@ -3,82 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Stock Opname</title>
-    
-    <!-- MEMUAT LIBRARY ZXING-JS (ALTERNATIF) -->
-    <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/zxing-library.min.js"></script>
-    
+    <title>Stock Opname IT Asset Cinambo DC</title>
     <style>
+        :root {
+            --background-color: #1a1a2e;
+            --surface-color: #16213e;
+            --primary-color: #0f3460;
+            --secondary-color: #e94560;
+            --text-primary: #ffffff;
+            --text-secondary: #a7a9be;
+            --border-color: #536dfe;
+        }
+
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             max-width: 600px; 
             margin: auto; 
             padding: 20px; 
-            background-color: #f4f4f9; 
+            background-color: var(--background-color); 
+            color: var(--text-primary);
         }
+
+        h1 {
+            color: var(--text-primary);
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
         .form-group { 
-            margin-bottom: 20px; 
+            margin-bottom: 25px; 
         }
+
         label { 
             display: block; 
-            margin-bottom: 5px; 
+            margin-bottom: 8px; 
             font-weight: bold; 
-            color: #333;
+            color: var(--text-secondary);
         }
+
         input, select, button { 
             width: 100%; 
-            padding: 12px; 
+            padding: 15px; 
             border-radius: 8px; 
-            border: 1px solid #ccc; 
+            border: 1px solid var(--primary-color); 
             box-sizing: border-box; 
             font-size: 16px; 
+            background-color: var(--surface-color);
+            color: var(--text-primary);
         }
-        button.scan-btn { 
-            background-color: #28a745; 
-            margin-top: 5px; 
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--border-color);
+            box-shadow: 0 0 10px var(--border-color);
         }
-        /* --- Gaya untuk Modal Scanner --- */
-        #scanner-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
+
+        button { 
+            background-color: var(--border-color); 
+            color: white; 
+            cursor: pointer; 
+            border: none;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
         }
-        #scanner-modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 10px;
-            text-align: center;
+
+        button:hover {
+            background-color: #4a4de7;
         }
-        /* Video akan mengisi kontainer */
-        #video-container {
-            width: 100%;
-            position: relative;
+        
+        button:active {
+            transform: scale(0.98);
         }
-        #video-container video {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
+
+        #status { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: center; 
+            display: none; 
+            font-weight: bold;
         }
-        #scanner-status {
-            margin: 10px 0;
-            color: #555;
+
+        .success { 
+            background-color: #1b4b35; 
+            color: #a7e7c8; 
+            border: 1px solid #28a745;
         }
-        #close-scanner-btn {
-            background-color: #dc3545;
-            margin-top: 15px;
+        .error { 
+            background-color: #492228; 
+            color: #f8d7da; 
+            border: 1px solid #dc3545;
         }
     </style>
 </head>
 <body>
-    <h1>📝 Form Stock Opname</h1>
+    <h1>📝 Stock Opname IT Asset Cinambo DC</h1>
     <form id="opnameForm">
         <div class="form-group">
             <label for="jenisAsset">Jenis Asset</label>
@@ -97,7 +118,14 @@
         <div class="form-group">
             <label for="serialNumber">Serial Number</label>
             <input type="text" id="serialNumber" name="serialNumber" required>
-            <button type="button" class="scan-btn" data-targetinput="serialNumber">📷 Scan Serial Number</button>
+        </div>
+
+        <div class="form-group">
+            <label for="kondisi">Kondisi</label>
+            <select id="kondisi" name="kondisi" required>
+                <option value="Bagus">Bagus</option>
+                <option value="Rusak">Rusak</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -105,103 +133,40 @@
             <input type="file" id="fotoAsset" accept="image/*" capture required>
         </div>
         
-        <button type="submit" id="submitButton">Kirim Data</button>
+        <button type="submit" id="submitButton">Submit</button>
     </form>
     <div id="status"></div>
-
-    <!-- Modal untuk Scanner -->
-    <div id="scanner-modal">
-        <div id="scanner-modal-content">
-            <h3>Pindai Barcode</h3>
-            <div id="video-container">
-                <video id="video-element"></video>
-            </div>
-            <p id="scanner-status">Arahkan kamera ke barcode...</p>
-            <button id="close-scanner-btn">Hentikan</button>
-        </div>
-    </div>
 
     <script>
         // ==========================================================
         // KONFIGURASI
-        const SCRIPT_URL = "URL_APPS_SCRIPT_ANDA"; // <-- Jangan lupa ganti
+        // GANTI DENGAN URL WEB APP ANDA
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUdZnrkttvvYpckRRifRwA63gV3W1kxont9KlRCCgoibG4CtmDKTXJ5rraLDIcAtJz/exec";
         // ==========================================================
 
         const form = document.getElementById('opnameForm');
         const submitButton = document.getElementById('submitButton');
         const statusDiv = document.getElementById('status');
         const fileInput = document.getElementById('fotoAsset');
-        
-        // --- LOGIKA SCANNER BARU DENGAN ZXING-JS ---
-        const scannerModal = document.getElementById('scanner-modal');
-        const videoElement = document.getElementById('video-element');
-        const scanButtons = document.querySelectorAll('.scan-btn');
-        const closeScannerBtn = document.getElementById('close-scanner-btn');
-        let currentTargetInput = null;
-        
-        // Inisialisasi pemindai dari Zxing
-        const codeReader = new ZXing.BrowserMultiFormatReader();
-        let selectedDeviceId;
 
-        function showScanner(targetInputId) {
-            currentTargetInput = document.getElementById(targetInputId);
-            scannerModal.style.display = "block";
-
-            // Memulai pemindaian
-            codeReader.listVideoInputDevices()
-                .then((videoInputDevices) => {
-                    // Memilih kamera belakang (biasanya yang terakhir dalam daftar)
-                    selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
-                    
-                    codeReader.decodeFromVideoDevice(selectedDeviceId, 'video-element', (result, err) => {
-                        if (result) {
-                            console.log(result);
-                            // Jika berhasil, isi input dan tutup pemindai
-                            currentTargetInput.value = result.text;
-                            hideScanner();
-                        }
-                        if (err && !(err instanceof ZXing.NotFoundException)) {
-                            console.error(err);
-                        }
-                    });
-                })
-                .catch((err) => {
-                    console.error(err);
-                    alert("Gagal mengakses kamera: " + err);
-                    hideScanner();
-                });
-        }
-
-        function hideScanner() {
-            // Menghentikan stream video dan mereset pemindai
-            codeReader.reset();
-            scannerModal.style.display = "none";
-        }
-
-        scanButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const targetInputId = button.getAttribute('data-targetinput');
-                showScanner(targetInputId);
-            });
-        });
-
-        closeScannerBtn.addEventListener('click', hideScanner);
-
-        // --- LOGIKA SUBMIT FORM (TETAP SAMA) ---
-        form.addEventListener('submit', function(e) { e.preventDefault(); /* ... logika submit sama seperti sebelumnya ... */ });
-        function addTimestampAndUpload(file) { /* ... logika timestamp sama seperti sebelumnya ... */ }
-
-        // Salin dan tempel kembali fungsi lengkap addTimestampAndUpload dan event listener untuk submit dari versi sebelumnya
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            const serialNumber = document.getElementById('serialNumber').value;
+            if (!serialNumber.trim()) {
+                alert("Serial Number tidak boleh kosong.");
+                return;
+            }
+
             submitButton.disabled = true;
             submitButton.textContent = 'Mengirim...';
+            statusDiv.style.display = 'none';
 
             const file = fileInput.files[0];
             if (!file) {
                 alert('Silakan ambil foto aset terlebih dahulu.');
                 submitButton.disabled = false;
-                submitButton.textContent = 'Kirim Data';
+                submitButton.textContent = 'Submit';
                 return;
             }
             addTimestampAndUpload(file);
@@ -220,23 +185,41 @@
                     ctx.drawImage(img, 0, 0);
 
                     const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+                    
                     const fontSize = Math.max(60, canvas.width * 0.04);
                     ctx.font = `bold ${fontSize}px Arial`;
                     ctx.fillStyle = "rgba(255, 255, 0, 0.9)";
                     ctx.textAlign = "left";
                     ctx.textBaseline = "bottom";
                     ctx.shadowColor = 'black';
-                    ctx.shadowBlur = 7;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetX = 5;
+                    ctx.shadowOffsetY = 5;
                     ctx.fillText(timestamp, 25, canvas.height - 25);
 
-                    const base64Data = canvas.toDataURL(file.type);
+                    // --- MEMBUAT NAMA FILE KUSTOM ---
+                    const date = new Date();
+                    const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = monthNames[date.getMonth()];
+                    const year = date.getFullYear();
+                    const formattedDate = `${day}-${month}-${year}`;
+
+                    const jenisAsset = document.getElementById('jenisAsset').value;
+                    const serialNumber = document.getElementById('serialNumber').value;
+                    const customFileName = `wr4maSTO-CinamboDC_${formattedDate}-${jenisAsset}-${serialNumber}.jpg`;
+                    // =================================
+
+                    // Konversi ke JPEG untuk memastikan format .jpg
+                    const base64Data = canvas.toDataURL('image/jpeg', 0.9);
                     
                     const formData = {
-                        jenisAsset: document.getElementById('jenisAsset').value,
-                        serialNumber: document.getElementById('serialNumber').value,
+                        jenisAsset: jenisAsset,
+                        serialNumber: serialNumber,
+                        kondisi: document.getElementById('kondisi').value,
                         fileData: base64Data,
-                        mimeType: file.type,
-                        fileName: `asset_${Date.now()}.${file.name.split('.').pop()}`
+                        mimeType: 'image/jpeg',
+                        fileName: customFileName
                     };
 
                     fetch(SCRIPT_URL, {
@@ -249,16 +232,18 @@
                             statusDiv.textContent = data.message;
                             statusDiv.className = 'success';
                             form.reset();
-                        } else { throw new Error(data.message); }
+                        } else {
+                            throw new Error(data.message);
+                        }
                     })
                     .catch(error => {
                         statusDiv.textContent = 'Terjadi kesalahan: ' + error.message;
                         statusDiv.className = 'error';
-                        statusDiv.style.display = 'block';
                     })
                     .finally(() => {
+                        statusDiv.style.display = 'block';
                         submitButton.disabled = false;
-                        submitButton.textContent = 'Kirim Data';
+                        submitButton.textContent = 'Submit';
                     });
                 }
                 img.src = event.target.result;
