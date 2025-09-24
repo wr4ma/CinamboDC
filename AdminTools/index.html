@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Tools | Cinambo DC</title>
+    <!-- Memuat Tailwind CSS untuk styling dasar -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat ikon dari Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Menggunakan font Orbitron & Rajdhani dari Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Rajdhani', sans-serif; /* Font futuristic untuk body */
+            background-color: #121212; /* Latar belakang dark mode utama */
+            color: #E0E0E0; /* Warna teks default */
+        }
+        
+        h1 {
+             font-family: 'Orbitron', sans-serif; /* Font futuristic untuk judul */
+             letter-spacing: 0.1em; /* Jarak antar huruf untuk kesan futuristic */
+        }
+
+        /* Canvas untuk animasi latar belakang */
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Posisikan di belakang semua konten */
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr); /* Default 1 kolom untuk mobile */
+            gap: 1.5rem; /* Jarak antar kotak */
+        }
+
+        /* Tampilan 3 kolom di layar medium (tablet) ke atas */
+        @media (min-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .menu-item {
+            background-color: rgba(30, 30, 30, 0.8); /* Warna sedikit transparan */
+            backdrop-filter: blur(10px); /* Efek blur di belakang item menu */
+            border: 1px solid #444;
+            border-radius: 1rem; /* Sudut yang sangat bulat */
+            padding: 2rem 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: #E0E0E0;
+            position: relative;
+            overflow: hidden;
+            /* Transisi untuk animasi */
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            
+            /* Properti untuk animasi masuk */
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        /* Animasi saat item terlihat */
+        .menu-item.visible {
+            opacity: 1;
+            transform: translateY(0px);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-10px); /* Efek mengangkat saat di-hover */
+            border-color: #3B82F6;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .menu-item i {
+            transition: transform 0.3s ease;
+            color: #60A5FA; /* Warna ikon biru muda */
+        }
+        
+        .menu-item:hover i {
+            transform: scale(1.1);
+        }
+
+        .menu-item span {
+            font-weight: 600; /* Menebalkan font menu item */
+            font-size: 1.1rem;
+        }
+
+        /* Style untuk modal popup */
+        .modal {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Style untuk footer credit */
+        .footer-credit {
+            position: fixed;
+            bottom: 1rem;
+            right: 1.5rem;
+            /* Menggunakan font Rajdhani dari body */
+            font-size: 1rem; /* Ukuran font dikecilkan */
+            font-weight: 500;
+            color: #a0a0a0;
+            text-shadow: 0 0 8px rgba(147, 197, 253, 0.4);
+            opacity: 0;
+            animation: fadeInFooter 2s ease 1s forwards; /* Animasi fade in dengan delay 1 detik */
+            z-index: 10;
+        }
+
+        @keyframes fadeInFooter {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <!-- Canvas untuk animasi latar belakang -->
+    <canvas id="background-canvas"></canvas>
+
+    <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Admin Tools</h1>
+        <p class="mt-2 text-lg text-gray-400">Cinambo DC</p>
+    </div>
+
+    <!-- Kontainer Menu -->
+    <div class="menu-grid w-full max-w-4xl">
+        <!-- Item 1: STO IT Asset -->
+        <a href="https://wr4ma.github.io/CinamboDC/AdminTools/STO/" class="menu-item">
+            <i class="ph-fill ph-database text-5xl"></i>
+            <span class="text-lg">STO IT Asset</span>
+        </a>
+
+        <!-- Item 2: Check Ops Profile -->
+        <a href="#" class="menu-item">
+            <i class="ph-fill ph-user-check text-5xl"></i>
+            <span class="text-lg">Check Ops Profile</span>
+        </a>
+
+        <!-- Item 3: Mode Mager -->
+        <a href="https://raw.githubusercontent.com/wr4ma/ModeMager/refs/heads/main/mode-mager.zip" class="menu-item">
+            <i class="ph-fill ph-robot text-5xl"></i>
+            <span class="text-lg">Mode Mager</span>
+        </a>
+    </div>
+
+    <!-- Popup Modal -->
+    <div id="popup-modal" class="modal fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-gray-800 text-white p-6 rounded-lg shadow-xl text-center flex items-center gap-4">
+            <!-- Spinner sederhana -->
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+            <p id="popup-message" class="text-lg">Membuka...</p>
+        </div>
+    </div>
+
+    <!-- Footer Credit -->
+    <footer class="footer-credit">
+        <p>Made with ❤️ by wr4ma</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Logika Menu dan Popup ---
+            const menuItems = document.querySelectorAll('.menu-item');
+            const popupModal = document.getElementById('popup-modal');
+            const popupMessage = document.getElementById('popup-message');
+            const spinner = popupModal.querySelector('.animate-spin');
+
+            menuItems.forEach((item, index) => {
+                const delay = index * 100;
+                setTimeout(() => {
+                    item.classList.add('visible');
+                }, delay);
+
+                item.addEventListener('click', function(event) {
+                    const destinationUrl = this.getAttribute('href');
+                    if (destinationUrl && destinationUrl !== '#') {
+                        event.preventDefault();
+                        const menuText = this.querySelector('span').textContent;
+                        popupMessage.textContent = `Membuka ${menuText}...`;
+                        spinner.style.display = 'block';
+                        popupModal.classList.add('show');
+                        setTimeout(() => {
+                            window.location.href = destinationUrl;
+                        }, 1500);
+                    } else {
+                        event.preventDefault();
+                        popupMessage.textContent = 'Coming Soon...';
+                        spinner.style.display = 'none';
+                        popupModal.classList.add('show');
+                        setTimeout(() => {
+                           popupModal.classList.remove('show');
+                        }, 2000);
+                    }
+                });
+            });
+
+            // --- Logika Animasi Latar Belakang Canvas ---
+            const canvas = document.getElementById('background-canvas');
+            const ctx = canvas.getContext('2d');
+            let particlesArray;
+
+            function setupCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 - 0.5;
+                }
+                update() {
+                    if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
+                    if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                }
+                draw() {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function initParticles() {
+                setupCanvas();
+                particlesArray = [];
+                let numberOfParticles = (canvas.height * canvas.width) / 9000;
+                for (let i = 0; i < numberOfParticles; i++) {
+                    particlesArray.push(new Particle());
+                }
+            }
+
+            function connectParticles() {
+                let opacityValue = 1;
+                for (let a = 0; a < particlesArray.length; a++) {
+                    for (let b = a; b < particlesArray.length; b++) {
+                        let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + 
+                                       ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                        if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                            opacityValue = 1 - (distance / 20000);
+                            ctx.strokeStyle = `rgba(147, 197, 253, ${opacityValue})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particlesArray.length; i++) {
+                    particlesArray[i].update();
+                    particlesArray[i].draw();
+                }
+                connectParticles();
+                requestAnimationFrame(animate);
+            }
+
+            initParticles();
+            animate();
+
+            window.addEventListener('resize', () => {
+                initParticles();
+            });
+        });
+    </script>
+
+</body>
+</html>
+
