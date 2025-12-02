@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wr4ma ⚡ Fast STO Webform</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
     <h1>⚡ Fast STO Webform</h1>
@@ -40,7 +39,14 @@
         
         <div class="form-group">
             <label for="serialNumber">Serial Number</label>
-            <input type="text" id="serialNumber" name="serialNumber" required>
+            <div class="input-group">
+                <input type="text" id="serialNumber" name="serialNumber" required placeholder="Ketik atau Scan...">
+                <button type="button" class="scan-trigger-btn" id="openScanBtn" title="Scan Barcode">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5h4v2H5v4H3V5h2zm4 14H5v-4H3v4h2v2h4v-2zm10-14h-4v2h4v4h2V5h-2zm0 10h2v4h-2v2h-4v-2h4v-4zM7 9h10v6H7V9z"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <div class="form-group">
@@ -72,47 +78,67 @@
 
     <div id="guideModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            
+            <span class="close" id="closeGuideModal">&times;</span>
             <div class="modal-section">
                 <h2>📚 Panduan Cara STO</h2>
                 <ul>
                     <li><strong>Sebelum Memulai Pastikan:</strong> Asset Sudah Disiapkan (PDA, Laptop, Printer, DLL)</li>
-                    <li><strong>Izin Lokasi:</strong> Pastikan Untuk mengklik "Allow/Izinkan" saat browser meminta akses lokasi (GPS) akses ini agar timestamp muncul lengkap dengan lokasi nya.</li>
+                    <li><strong>Pastikan GPS Aktif:</strong> Pastikan GPS/Lokasi di HP Aktif sebelum memulai STO agar lokasi tercatat.</li>
+                    <li><strong>Izin Lokasi:</strong> Pastikan mengklik "Allow/Izinkan" saat browser meminta akses lokasi.</li>
                     <li><strong>Jenis Asset:</strong> Pilih dari daftar. Jika tidak ada, pilih "Lainnya" dan ketik manual.</li>
-                    <li><strong>Serial Number & Device ID:</strong> Gunakan fitur scan dari keyboard HP, Google Lens , atau ketik manual.</li>
-                    <li><strong>Device ID Kosong:</strong> Jika aset tidak memiliki Device ID atau sudah pernah didata, isi dengan tanda strip (-).</li>
-                    <li><strong>Foto:</strong> Ambil foto aset secara jelas. Sistem akan otomatis menambahkan tanggal, jam, dan lokasi pada foto.</li>
+                    <li><strong>Serial Number & Device ID:</strong> Gunakan tombol scan (ikon pembidik) atau ketik manual.</li>
+                    <li><strong>Device ID Kosong:</strong> Jika aset tidak memiliki Device ID, isi dengan tanda strip (-).</li>
+                    <li><strong>Foto:</strong> Ambil foto aset secara jelas. Tanggal, jam, dan lokasi otomatis ditambahkan.</li>
                 </ul>
             </div>
-
+            
             <div class="modal-section">
-                <h2>🛠️ Changelog (Riwayat Perubahan)</h2>
+                <h2>🛠️ Changelog (Riwayat Fitur)</h2>
                 <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.4 (Terbaru)</div>
+                    <div class="changelog-date">Versi 1.7 (Terbaru)</div>
                     <ul>
-                        <li>Update format Timestamp menjadi: <code>HH:MM | DD Bulan YYYY</code>.</li>
-                        <li>Pembaruan font pada foto menjadi Arial (Lebih mudah dibaca).</li>
-                        <li>Penghapusan garis pemisah antara tanggal dan alamat.</li>
+                        <li>Penghapusan fitur Flash untuk stabilitas kamera.</li>
+                        <li>Perubahan ikon tombol scan menjadi logo Scanner Viewfinder.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item">
+                    <div class="changelog-date">Versi 1.6</div>
+                    <ul>
+                        <li>Penambahan fitur Scan Barcode langsung di kolom Serial Number.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item">
+                    <div class="changelog-date">Versi 1.4</div>
+                    <ul>
+                        <li>Perubahan format Timestamp menjadi: <code>HH:MM | DD Bulan YYYY</code>.</li>
+                        <li>Perubahan jenis font pada foto agar lebih mudah dibaca.</li>
                     </ul>
                 </div>
                 <div class="changelog-item">
                     <div class="changelog-date">Versi 1.3</div>
                     <ul>
                         <li>Penambahan fitur Auto-Lokasi (Nama Jalan & Kota) pada watermark foto.</li>
-                        <li>Optimasi kompresi gambar (Upload lebih cepat & hemat kuota).</li>
-                        <li>Perbaikan error "Failed to Fetch" saat submit data.</li>
+                        <li>Optimasi kompresi gambar (Upload lebih cepat).</li>
+                        <li>Perbaikan sistem pengiriman data (Anti-error).</li>
                     </ul>
                 </div>
                 <div class="changelog-item">
                     <div class="changelog-date">Versi 1.2</div>
                     <ul>
-                        <li>Penambahan opsi "Handy Talky" dan input "Lainnya".</li>
-                        <li>Penambahan kolom "Device ID" dan "Kondisi".</li>
-                        <li>Perubahan tampilan menjadi Dark Mode (Tema Gelap).</li>
+                        <li>Penambahan opsi "Handy Talky", kolom "Device ID", dan "Kondisi".</li>
                     </ul>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="scannerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeScannerModal">&times;</span>
+            <h2>📷 Scan Barcode</h2>
+            <div id="scanner-viewport"></div>
+            <p id="scanner-status" style="font-size: 0.8em; color: gray; text-align: center;">Arahkan kamera ke barcode/QR Code</p>
+            <button type="button" id="stopScanBtn">Batalkan</button>
         </div>
     </div>
 
