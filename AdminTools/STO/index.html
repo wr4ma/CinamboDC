@@ -4,109 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wr4ma ⚡ Fast STO Webform</title>
-    <style>
-        :root {
-            --background-color: #1a1a2e;
-            --surface-color: #16213e;
-            --primary-color: #0f3460;
-            --secondary-color: #e94560;
-            --text-primary: #ffffff;
-            --text-secondary: #a7a9be;
-            --border-color: #536dfe;
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 600px; 
-            margin: auto; 
-            padding: 20px; 
-            background-color: var(--background-color); 
-            color: var(--text-primary);
-        }
-
-        h1 {
-            color: var(--text-primary);
-            text-align: center;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-
-        .form-group { 
-            margin-bottom: 25px; 
-        }
-
-        label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: bold; 
-            color: var(--text-secondary);
-        }
-
-        input, select, button { 
-            width: 100%; 
-            padding: 15px; 
-            border-radius: 8px; 
-            border: 1px solid var(--primary-color); 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            background-color: var(--surface-color);
-            color: var(--text-primary);
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--border-color);
-            box-shadow: 0 0 10px var(--border-color);
-        }
-
-        button { 
-            background-color: var(--border-color); 
-            color: white; 
-            cursor: pointer; 
-            border: none;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-
-        button:hover {
-            background-color: #4a4de7;
-        }
-        
-        button:active {
-            transform: scale(0.98);
-        }
-
-        #status { 
-            margin-top: 20px; 
-            padding: 15px; 
-            border-radius: 8px; 
-            text-align: center; 
-            display: none; 
-            font-weight: bold;
-        }
-
-        .success { 
-            background-color: #1b4b35; 
-            color: #a7e7c8; 
-            border: 1px solid #28a745;
-        }
-        .error { 
-            background-color: #492228; 
-            color: #f8d7da; 
-            border: 1px solid #dc3545;
-        }
-        .keterangan {
-            color: var(--text-secondary);
-            font-size: 12px;
-            display: block;
-            margin-top: 8px;
-            font-style: italic;
-        }
-    </style>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>wr4ma ⚡ Fast STO Webform</h1>
+    <h1>⚡ Fast STO Webform</h1>
+    
+    <div class="guide-btn-container">
+        <button id="guideBtn" type="button">📖 Panduan & Changelog</button>
+    </div>
+
     <form id="opnameForm">
         <div class="form-group">
             <label for="jenisAsset">Jenis Asset</label>
@@ -155,245 +66,56 @@
     </form>
     <div id="status"></div>
 
-    <script>
-        // ==========================================================
-        // KONFIGURASI
-        // URL Script ini harus sama dengan yang ada di Apps Script deployment terbaru
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5BVp2nw1V71W76XdBz1bIS7ou1u-bcr2f4cN9pTnG6X59dhT10iDFYsZ_BA7szv6Ykg/exec";
-        // ==========================================================
+    <div class="main-footer">
+        Made With ❤️ by <a href="https://www.instagram.com/wr4ma/" target="_blank" class="wr4ma-link">wr4ma</a>
+    </div>
 
-        const form = document.getElementById('opnameForm');
-        const submitButton = document.getElementById('submitButton');
-        const statusDiv = document.getElementById('status');
-        const fileInput = document.getElementById('fotoAsset');
-        const jenisAssetSelect = document.getElementById('jenisAsset');
-        const jenisAssetLainnyaDiv = document.getElementById('jenisAssetLainnyaDiv');
-        const jenisAssetLainnyaInput = document.getElementById('jenisAssetLainnya');
-
-        jenisAssetSelect.addEventListener('change', function() {
-            if (this.value === 'Lainnya') {
-                jenisAssetLainnyaDiv.style.display = 'block';
-                jenisAssetLainnyaInput.required = true;
-            } else {
-                jenisAssetLainnyaDiv.style.display = 'none';
-                jenisAssetLainnyaInput.required = false;
-                jenisAssetLainnyaInput.value = '';
-            }
-        });
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
             
-            const serialNumber = document.getElementById('serialNumber').value;
-            const deviceId = document.getElementById('deviceId').value;
-            if (!serialNumber.trim() || !deviceId.trim()) {
-                alert("Serial Number dan Device ID tidak boleh kosong.");
-                return;
-            }
+            <div class="modal-section">
+                <h2>📚 Panduan Cara STO</h2>
+                <ul>
+                    <li><strong>Sebelum Memulai Pastikan:</strong> Asset Sudah Disiapkan (PDA, Laptop, Printer, DLL)</li>
+                    <li><strong>Izin Lokasi:</strong> Pastikan Untuk mengklik "Allow/Izinkan" saat browser meminta akses lokasi (GPS) akses ini agar timestamp muncul lengkap dengan lokasi nya.</li>
+                    <li><strong>Jenis Asset:</strong> Pilih dari daftar. Jika tidak ada, pilih "Lainnya" dan ketik manual.</li>
+                    <li><strong>Serial Number & Device ID:</strong> Gunakan fitur scan dari keyboard HP, Google Lens , atau ketik manual.</li>
+                    <li><strong>Device ID Kosong:</strong> Jika aset tidak memiliki Device ID atau sudah pernah didata, isi dengan tanda strip (-).</li>
+                    <li><strong>Foto:</strong> Ambil foto aset secara jelas. Sistem akan otomatis menambahkan tanggal, jam, dan lokasi pada foto.</li>
+                </ul>
+            </div>
 
-            if (jenisAssetSelect.value === 'Lainnya' && !jenisAssetLainnyaInput.value.trim()) {
-                alert("Silakan isi Jenis Asset Lainnya.");
-                return;
-            }
+            <div class="modal-section">
+                <h2>🛠️ Changelog (Riwayat Perubahan)</h2>
+                <div class="changelog-item">
+                    <div class="changelog-date">Versi 1.4 (Terbaru)</div>
+                    <ul>
+                        <li>Update format Timestamp menjadi: <code>HH:MM | DD Bulan YYYY</code>.</li>
+                        <li>Pembaruan font pada foto menjadi Arial (Lebih mudah dibaca).</li>
+                        <li>Penghapusan garis pemisah antara tanggal dan alamat.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item">
+                    <div class="changelog-date">Versi 1.3</div>
+                    <ul>
+                        <li>Penambahan fitur Auto-Lokasi (Nama Jalan & Kota) pada watermark foto.</li>
+                        <li>Optimasi kompresi gambar (Upload lebih cepat & hemat kuota).</li>
+                        <li>Perbaikan error "Failed to Fetch" saat submit data.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item">
+                    <div class="changelog-date">Versi 1.2</div>
+                    <ul>
+                        <li>Penambahan opsi "Handy Talky" dan input "Lainnya".</li>
+                        <li>Penambahan kolom "Device ID" dan "Kondisi".</li>
+                        <li>Perubahan tampilan menjadi Dark Mode (Tema Gelap).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Silakan ambil foto aset terlebih dahulu.');
-                return;
-            }
-
-            // Mulai proses
-            submitButton.disabled = true;
-            submitButton.textContent = 'Mencari Lokasi...';
-            statusDiv.style.display = 'none';
-
-            getLocationAndProcess(file);
-        });
-
-        function getLocationAndProcess(file) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                const address = data.display_name || `Lat: ${lat}, Lon: ${lon}`;
-                                addTimestampAndUpload(file, address);
-                            })
-                            .catch(err => {
-                                console.error("Gagal mendapatkan alamat:", err);
-                                addTimestampAndUpload(file, `Lat: ${lat}, Lon: ${lon} (Gagal memuat alamat)`);
-                            });
-                    },
-                    (error) => {
-                        console.error("Gagal mendapatkan GPS:", error);
-                        addTimestampAndUpload(file, "Lokasi tidak ditemukan (Pastikan GPS aktif)");
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            } else {
-                addTimestampAndUpload(file, "Browser tidak mendukung GPS");
-            }
-        }
-        
-        function addTimestampAndUpload(file, locationText) {
-            submitButton.textContent = 'Mengompres Gambar...';
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    // --- KOMPRESI AGRESIF ---
-                    // Lebar maksimal 800px sudah sangat cukup untuk dokumentasi
-                    const MAX_WIDTH = 800;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    // ==========================================
-
-                    const dateObj = new Date();
-                    
-                    const hours = String(dateObj.getHours()).padStart(2, '0');
-                    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-                    
-                    const day = String(dateObj.getDate()).padStart(2, '0'); 
-                    const monthNamesIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                    const month = monthNamesIndo[dateObj.getMonth()];
-                    const year = dateObj.getFullYear();
-
-                    // Format: 14:30, 03-Januari-2025
-                    const timestamp = `${hours}:${minutes}, ${day}-${month}-${year}`;
-                    
-                    const fontSize = Math.max(20, canvas.width * 0.035); 
-                    ctx.font = `bold ${fontSize}px Arial`;
-                    ctx.fillStyle = "white"; 
-                    ctx.textAlign = "left";
-                    ctx.textBaseline = "bottom";
-                    
-                    ctx.shadowColor = 'black';
-                    ctx.shadowBlur = 4;
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = 'black';
-
-                    const maxWidth = canvas.width - 30; 
-                    const lineHeight = fontSize * 1.3;
-                    const x = 15;
-                    let y = canvas.height - 15; 
-
-                    ctx.strokeText(timestamp, x, y);
-                    ctx.fillText(timestamp, x, y);
-                    
-                    y -= lineHeight;
-
-                    function wrapText(text, x, y, maxWidth, lineHeight) {
-                        const words = text.split(' ');
-                        let line = '';
-                        let lines = [];
-
-                        for(let n = 0; n < words.length; n++) {
-                            const testLine = line + words[n] + ' ';
-                            const metrics = ctx.measureText(testLine);
-                            const testWidth = metrics.width;
-                            if (testWidth > maxWidth && n > 0) {
-                                lines.push(line);
-                                line = words[n] + ' ';
-                            } else {
-                                line = testLine;
-                            }
-                        }
-                        lines.push(line);
-
-                        for (let k = lines.length - 1; k >= 0; k--) {
-                            ctx.strokeText(lines[k], x, y);
-                            ctx.fillText(lines[k], x, y);
-                            y -= lineHeight;
-                        }
-                    }
-
-                    wrapText(locationText, x, y, maxWidth, lineHeight);
-
-                    const monthNamesShort = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-                    const dayStr = String(dateObj.getDate()).padStart(2, '0');
-                    const monthStr = monthNamesShort[dateObj.getMonth()];
-                    const formattedDateFilename = `${dayStr}-${monthStr}-${year}`;
-
-                    let jenisAsset = jenisAssetSelect.value;
-                    if (jenisAsset === 'Lainnya') {
-                        jenisAsset = jenisAssetLainnyaInput.value;
-                    }
-
-                    const serialNumber = document.getElementById('serialNumber').value;
-                    const customFileName = `STO-CinamboDC_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.jpg`;
-                    
-                    // Kompresi kualitas JPG ke 60% agar sangat ringan
-                    const base64Data = canvas.toDataURL('image/jpeg', 0.6);
-                    
-                    const formData = {
-                        jenisAsset: jenisAsset,
-                        serialNumber: serialNumber,
-                        deviceId: document.getElementById('deviceId').value,
-                        kondisi: document.getElementById('kondisi').value,
-                        fileData: base64Data,
-                        mimeType: 'image/jpeg',
-                        fileName: customFileName
-                    };
-
-                    submitButton.textContent = 'Mengirim data...';
-
-                    // --- PERBAIKAN FETCH UTAMA ---
-                    // Mengirim sebagai JSON string dengan 'text/plain'
-                    // Ini "mengelabui" browser agar tidak melakukan CORS Preflight check
-                    fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(formData),
-                        headers: {
-                            "Content-Type": "text/plain" 
-                        }
-                    })
-                    .then(response => {
-                         if (!response.ok) {
-                             throw new Error(`HTTP error! status: ${response.status}`);
-                         }
-                         return response.json();
-                    })
-                    .then(data => {
-                        if (data.status === 'success') {
-                            statusDiv.textContent = data.message;
-                            statusDiv.className = 'success';
-                            form.reset();
-                            jenisAssetLainnyaDiv.style.display = 'none';
-                        } else {
-                            throw new Error(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error detail:', error);
-                        statusDiv.textContent = 'Gagal mengirim: ' + error.message + '. Coba refresh halaman.';
-                        statusDiv.className = 'error';
-                    })
-                    .finally(() => {
-                        statusDiv.style.display = 'block';
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Submit';
-                    });
-                }
-                img.src = event.target.result;
-            }
-            reader.readAsDataURL(file);
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
