@@ -158,6 +158,7 @@
     <script>
         // ==========================================================
         // KONFIGURASI
+        // URL Script ini harus sama dengan yang ada di Apps Script deployment terbaru
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5BVp2nw1V71W76XdBz1bIS7ou1u-bcr2f4cN9pTnG6X59dhT10iDFYsZ_BA7szv6Ykg/exec";
         // ==========================================================
 
@@ -239,7 +240,7 @@
         }
         
         function addTimestampAndUpload(file, locationText) {
-            submitButton.textContent = 'Memproses gambar (Compressing)...';
+            submitButton.textContent = 'Mengompres Gambar...';
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
@@ -247,9 +248,9 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // --- LOGIKA RESIZE GAMBAR AGAR RINGAN ---
-                    // Kita batasi lebar maksimal 1000px agar upload cepat
-                    const MAX_WIDTH = 1000;
+                    // --- KOMPRESI AGRESIF ---
+                    // Lebar maksimal 800px sudah sangat cukup untuk dokumentasi
+                    const MAX_WIDTH = 800;
                     let width = img.width;
                     let height = img.height;
 
@@ -273,10 +274,10 @@
                     const month = monthNamesIndo[dateObj.getMonth()];
                     const year = dateObj.getFullYear();
 
+                    // Format: 14:30, 03-Januari-2025
                     const timestamp = `${hours}:${minutes}, ${day}-${month}-${year}`;
                     
-                    // --- SETUP TEXT STYLE (Disesuaikan dengan ukuran baru) ---
-                    const fontSize = Math.max(24, canvas.width * 0.035); 
+                    const fontSize = Math.max(20, canvas.width * 0.035); 
                     ctx.font = `bold ${fontSize}px Arial`;
                     ctx.fillStyle = "white"; 
                     ctx.textAlign = "left";
@@ -287,11 +288,10 @@
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = 'black';
 
-                    // --- LOGIKA TEXT WRAPPING ---
-                    const maxWidth = canvas.width - 40; 
+                    const maxWidth = canvas.width - 30; 
                     const lineHeight = fontSize * 1.3;
-                    const x = 20;
-                    let y = canvas.height - 20; 
+                    const x = 15;
+                    let y = canvas.height - 15; 
 
                     ctx.strokeText(timestamp, x, y);
                     ctx.fillText(timestamp, x, y);
@@ -325,7 +325,6 @@
 
                     wrapText(locationText, x, y, maxWidth, lineHeight);
 
-                    // --- NAMA FILE KUSTOM ---
                     const monthNamesShort = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
                     const dayStr = String(dateObj.getDate()).padStart(2, '0');
                     const monthStr = monthNamesShort[dateObj.getMonth()];
@@ -339,8 +338,8 @@
                     const serialNumber = document.getElementById('serialNumber').value;
                     const customFileName = `STO-CinamboDC_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.jpg`;
                     
-                    // Upload Process - Kompresi ke 0.7 (70%) agar ringan
-                    const base64Data = canvas.toDataURL('image/jpeg', 0.7);
+                    // Kompresi kualitas JPG ke 60% agar sangat ringan
+                    const base64Data = canvas.toDataURL('image/jpeg', 0.6);
                     
                     const formData = {
                         jenisAsset: jenisAsset,
@@ -354,9 +353,15 @@
 
                     submitButton.textContent = 'Mengirim data...';
 
+                    // --- PERBAIKAN FETCH UTAMA ---
+                    // Mengirim sebagai JSON string dengan 'text/plain'
+                    // Ini "mengelabui" browser agar tidak melakukan CORS Preflight check
                     fetch(SCRIPT_URL, {
                         method: 'POST',
-                        body: new URLSearchParams(formData)
+                        body: JSON.stringify(formData),
+                        headers: {
+                            "Content-Type": "text/plain" 
+                        }
                     })
                     .then(response => {
                          if (!response.ok) {
@@ -392,5 +397,3 @@
     </script>
 </body>
 </html>
-
-
