@@ -8,17 +8,15 @@ const jenisAssetSelect = document.getElementById('jenisAsset');
 const jenisAssetLainnyaDiv = document.getElementById('jenisAssetLainnyaDiv');
 const jenisAssetLainnyaInput = document.getElementById('jenisAssetLainnya');
 
-const modal = document.getElementById("guideModal");
-const btn = document.getElementById("guideBtn");
-const span = document.getElementsByClassName("close")[0];
-
-btn.onclick = function() {
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
     modal.style.display = "block";
     modal.classList.remove("hide");
     modal.classList.add("show");
 }
 
-function closeModal() {
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
     modal.classList.remove("show");
     modal.classList.add("hide");
     setTimeout(() => {
@@ -27,11 +25,65 @@ function closeModal() {
     }, 300);
 }
 
-span.onclick = closeModal;
+document.getElementById("guideBtn").onclick = () => openModal("guideModal");
+document.getElementById("closeGuideModal").onclick = () => closeModal("guideModal");
+
+const scannerModal = document.getElementById("scannerModal");
+const openScanBtn = document.getElementById("openScanBtn");
+const closeScanBtn = document.getElementById("closeScannerModal");
+const stopScanBtn = document.getElementById("stopScanBtn");
+const snInput = document.getElementById("serialNumber");
+
+let html5QrCode;
+
+openScanBtn.onclick = () => {
+    openModal("scannerModal");
+    startScanner();
+};
+
+function stopAndCloseScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            closeModal("scannerModal");
+        }).catch(err => {
+            console.error("Failed to stop scanner", err);
+            closeModal("scannerModal");
+        });
+    } else {
+        closeModal("scannerModal");
+    }
+}
+
+closeScanBtn.onclick = stopAndCloseScanner;
+stopScanBtn.onclick = stopAndCloseScanner;
+
+function startScanner() {
+    html5QrCode = new Html5Qrcode("scanner-viewport");
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+    
+    html5QrCode.start(
+        { facingMode: "environment" }, 
+        config,
+        (decodedText, decodedResult) => {
+            snInput.value = decodedText;
+            snInput.style.backgroundColor = "#1b4b35";
+            setTimeout(() => snInput.style.backgroundColor = "var(--surface-color)", 500);
+            stopAndCloseScanner();
+        },
+        (errorMessage) => { }
+    ).catch(err => {
+        alert("Gagal mengakses kamera: " + err);
+        closeModal("scannerModal");
+    });
+}
 
 window.onclick = function(event) {
-    if (event.target == modal) {
-        closeModal();
+    if (event.target == document.getElementById("guideModal")) {
+        closeModal("guideModal");
+    }
+    if (event.target == document.getElementById("scannerModal")) {
+        stopAndCloseScanner();
     }
 }
 
@@ -80,7 +132,6 @@ function getLocationAndProcess(file) {
             (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                
                 fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=id`)
                     .then(response => response.json())
                     .then(data => {
@@ -126,10 +177,8 @@ function addTimestampAndUpload(file, locationText) {
             ctx.drawImage(img, 0, 0, width, height);
 
             const dateObj = new Date();
-            
             const hours = String(dateObj.getHours()).padStart(2, '0');
             const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-            
             const day = String(dateObj.getDate()).padStart(2, '0'); 
             const monthNamesIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const month = monthNamesIndo[dateObj.getMonth()];
@@ -138,7 +187,7 @@ function addTimestampAndUpload(file, locationText) {
             const timestamp = `${hours}:${minutes} | ${day} ${month} ${year}`;
             
             const fontSize = Math.max(28, canvas.width * 0.04); 
-            ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+            ctx.font = `bold ${fontSize}px Arial, sans-serif`; 
             ctx.fillStyle = "white"; 
             ctx.textAlign = "left";
             ctx.textBaseline = "bottom";
@@ -152,15 +201,13 @@ function addTimestampAndUpload(file, locationText) {
             let y = canvas.height - 25; 
 
             const addressFontSize = fontSize * 0.7; 
-            ctx.font = `bold ${addressFontSize}px Arial, sans-serif`;
-            
+            ctx.font = `bold ${addressFontSize}px Arial, sans-serif`; 
             const lineHeight = addressFontSize * 1.4;
 
             function wrapText(text, x, y, maxWidth, lineHeight) {
                 const words = text.split(' ');
                 let line = '';
                 let lines = [];
-
                 for(let n = 0; n < words.length; n++) {
                     const testLine = line + words[n] + ' ';
                     const metrics = ctx.measureText(testLine);
@@ -173,20 +220,19 @@ function addTimestampAndUpload(file, locationText) {
                     }
                 }
                 lines.push(line);
-
                 for (let k = lines.length - 1; k >= 0; k--) {
                     ctx.strokeText(lines[k], x, y);
                     ctx.fillText(lines[k], x, y);
                     y -= lineHeight;
                 }
-                return y;
+                return y; 
             }
 
             const maxWidth = (canvas.width * 0.5) - 40;
             y = wrapText(locationText, x, y, maxWidth, lineHeight);
 
-            y -= 10;
-            ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+            y -= 10; 
+            ctx.font = `bold ${fontSize}px Arial, sans-serif`; 
             ctx.strokeText(timestamp, x, y);
             ctx.fillText(timestamp, x, y);
 
@@ -220,15 +266,11 @@ function addTimestampAndUpload(file, locationText) {
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify(formData),
-                headers: {
-                    "Content-Type": "text/plain"
-                }
+                headers: { "Content-Type": "text/plain" }
             })
             .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
+                 if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                 return response.json();
             })
             .then(data => {
                 if (data.status === 'success') {
