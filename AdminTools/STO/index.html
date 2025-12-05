@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>⚡ Fast STO Webform</h1>
@@ -18,6 +18,20 @@
     </div>
 
     <form id="opnameForm">
+        <div class="form-group">
+            <label>Facility (Lokasi)</label>
+            <div class="radio-group">
+                <label class="radio-container">Cinambo RDC
+                    <input type="radio" name="facility" value="Cinambo RDC" required>
+                    <span class="checkmark"></span>
+                </label>
+                <label class="radio-container">Cinambo DC
+                    <input type="radio" name="facility" value="Cinambo DC" checked required>
+                    <span class="checkmark"></span>
+                </label>
+            </div>
+        </div>
+
         <div class="form-group">
             <label for="jenisAsset">Jenis Asset</label>
             <select id="jenisAsset" name="jenisAsset" required>
@@ -82,29 +96,37 @@
             <div class="modal-section">
                 <h2>📚 Panduan Cara STO</h2>
                 <ul>
-                    <li><strong>Sebelum Memulai Pastikan:</strong> Asset Sudah Disiapkan (PDA, Laptop, Printer, DLL)</li>
-                    <li><strong>Pastikan GPS Aktif:</strong> Pastikan GPS/Lokasi di HP Aktif sebelum memulai STO agar lokasi tercatat.</li>
-                    <li><strong>Izin Lokasi:</strong> Pastikan mengklik "Allow/Izinkan" saat browser meminta akses lokasi.</li>
-                    <li><strong>Jenis Asset:</strong> Pilih dari daftar. Jika tidak ada, pilih "Lainnya" dan ketik manual.</li>
-                    <li><strong>Serial Number & Device ID:</strong> Gunakan tombol scan (ikon pembidik) atau ketik manual.</li>
-                    <li><strong>Device ID Kosong:</strong> Jika aset tidak memiliki Device ID, isi dengan tanda strip (-).</li>
-                    <li><strong>Foto:</strong> Ambil foto aset secara jelas. Tanggal, jam, dan lokasi otomatis ditambahkan.</li>
+                    <li><strong>Sebelum Memulai Pastikan:</strong> Asset Sudah Disiapkan.</li>
+                    <li><strong>Pilih Facility:</strong> Tentukan lokasi (RDC/DC) di bagian atas.</li>
+                    <li><strong>Pastikan GPS Aktif:</strong> Pastikan GPS/Lokasi di hp Aktif sebelum memulai STO agar lokasi tercatat.</li>
+                    <li><strong>Izin Lokasi:</strong> Klik "Allow/Izinkan" saat browser meminta akses lokasi.</li>
+                    <li><strong>Jenis Asset:</strong> Pilih dari daftar atau ketik manual.</li>
+                    <li><strong>Serial Number:</strong> Gunakan tombol scan (ikon pembidik) atau ketik manual.</li>
+                    <li><strong>Device ID:</strong> Isi jika ada, atau tanda strip (-) jika kosong.</li>
+                    <li><strong>Foto:</strong> Ambil foto aset. Data waktu dan lokasi akan otomatis ditambahkan.</li>
                 </ul>
             </div>
             
             <div class="modal-section">
                 <h2>🛠️ Changelog (Riwayat Fitur)</h2>
                 <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.7 (Terbaru)</div>
+                    <div class="changelog-date">Versi 1.8 (Terbaru)</div>
+                    <ul>
+                        <li>Penambahan pilihan Facility (Cinambo RDC / DC).</li>
+                        <li>Pilihan Facility tidak akan reset setelah submit.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item">
+                    <div class="changelog-date">Versi 1.7</div>
                     <ul>
                         <li>Penghapusan fitur Flash untuk stabilitas kamera.</li>
-                        <li>Perubahan ikon tombol scan menjadi logo Scanner Viewfinder.</li>
+                        <li>Perubahan ikon tombol scan menjadi logo Viewfinder.</li>
                     </ul>
                 </div>
                 <div class="changelog-item">
                     <div class="changelog-date">Versi 1.6</div>
                     <ul>
-                        <li>Penambahan fitur Scan Barcode langsung di kolom Serial Number.</li>
+                        <li>Penambahan fitur Scan Barcode (In-App) pada Serial Number.</li>
                     </ul>
                 </div>
                 <div class="changelog-item">
@@ -117,9 +139,8 @@
                 <div class="changelog-item">
                     <div class="changelog-date">Versi 1.3</div>
                     <ul>
-                        <li>Penambahan fitur Auto-Lokasi (Nama Jalan & Kota) pada watermark foto.</li>
-                        <li>Optimasi kompresi gambar (Upload lebih cepat).</li>
-                        <li>Perbaikan sistem pengiriman data (Anti-error).</li>
+                        <li>Penambahan fitur Auto-Lokasi pada watermark foto.</li>
+                        <li>Optimasi kompresi gambar & perbaikan sistem upload.</li>
                     </ul>
                 </div>
                 <div class="changelog-item">
@@ -135,7 +156,7 @@
     <div id="scannerModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeScannerModal">&times;</span>
-            <h2>📷 Scan Barcode</h2>
+            <h2>📷 Pindai Barcode</h2>
             <div id="scanner-viewport"></div>
             <p id="scanner-status" style="font-size: 0.8em; color: gray; text-align: center;">Arahkan kamera ke barcode/QR Code</p>
             <button type="button" id="stopScanBtn">Batalkan</button>

@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwmSsE_HDv4uIrGShRh85DuGn0wftRab6JNG3DxvTw_-ePQyMuosP2Jn6bSCCLQwxlFgA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFv6rbkl9OpT0SVOXnhL1nBf_ZUr8dGn17cEkjmExfg_BE3rHHqsaiSxvqo6sVrsYKqw/exec";
 
 const form = document.getElementById('opnameForm');
 const submitButton = document.getElementById('submitButton');
@@ -33,7 +33,6 @@ const openScanBtn = document.getElementById("openScanBtn");
 const closeScanBtn = document.getElementById("closeScannerModal");
 const stopScanBtn = document.getElementById("stopScanBtn");
 const snInput = document.getElementById("serialNumber");
-
 let html5QrCode;
 
 openScanBtn.onclick = () => {
@@ -241,17 +240,21 @@ function addTimestampAndUpload(file, locationText) {
             const monthStr = monthNamesShort[dateObj.getMonth()];
             const formattedDateFilename = `${dayStr}-${monthStr}-${year}`;
 
+            let selectedFacility = document.querySelector('input[name="facility"]:checked').value;
+            let facilityFilename = selectedFacility.replace(/\s/g, ''); 
+
             let jenisAsset = jenisAssetSelect.value;
             if (jenisAsset === 'Lainnya') {
                 jenisAsset = jenisAssetLainnyaInput.value;
             }
 
             const serialNumber = document.getElementById('serialNumber').value;
-            const customFileName = `STO-CinamboDC_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.jpg`;
+            const customFileName = `STO-${facilityFilename}_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.jpg`;
             
             const base64Data = canvas.toDataURL('image/jpeg', 0.7);
             
             const formData = {
+                facility: selectedFacility,
                 jenisAsset: jenisAsset,
                 serialNumber: serialNumber,
                 deviceId: document.getElementById('deviceId').value,
@@ -269,14 +272,21 @@ function addTimestampAndUpload(file, locationText) {
                 headers: { "Content-Type": "text/plain" }
             })
             .then(response => {
-                 if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
-                 return response.json();
+                    if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                    return response.json();
             })
             .then(data => {
                 if (data.status === 'success') {
                     statusDiv.textContent = data.message;
                     statusDiv.className = 'success';
+                    
+                    const currentFacility = document.querySelector('input[name="facility"]:checked').value;
                     form.reset();
+                    const radios = document.getElementsByName('facility');
+                    for(const r of radios) {
+                        if(r.value === currentFacility) r.checked = true;
+                    }
+                    
                     jenisAssetLainnyaDiv.style.display = 'none';
                 } else {
                     throw new Error(data.message);
