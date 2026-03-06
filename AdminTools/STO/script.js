@@ -1,9 +1,10 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFv6rbkl9OpT0SVOXnhL1nBf_ZUr8dGn17cEkjmExfg_BE3rHHqsaiSxvqo6sVrsYKqw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjenDVI2raM5lr6Up6QREmfTkeS8ywsmbiaVFg4IG-fZGX3S00LwoN-o_aUtAQk0em5A/exec";
 
 const form = document.getElementById('opnameForm');
 const submitButton = document.getElementById('submitButton');
 const statusDiv = document.getElementById('status');
 const fileInput = document.getElementById('fotoAsset');
+const videoInput = document.getElementById('videoAsset');
 const jenisAssetSelect = document.getElementById('jenisAsset');
 const jenisAssetLainnyaDiv = document.getElementById('jenisAssetLainnyaDiv');
 const jenisAssetLainnyaInput = document.getElementById('jenisAssetLainnya');
@@ -118,14 +119,20 @@ form.addEventListener('submit', function(e) {
         return;
     }
 
+    const videoFile = videoInput.files[0];
+    if (videoFile && videoFile.size > 20 * 1024 * 1024) {
+        alert("Ukuran video terlalu besar! Maksimal 20MB agar tidak gagal dikirim.");
+        return;
+    }
+
     submitButton.disabled = true;
     submitButton.textContent = 'Mencari Lokasi...';
     statusDiv.style.display = 'none';
 
-    getLocationAndProcess(file);
+    getLocationAndProcess(file, videoFile);
 });
 
-function getLocationAndProcess(file) {
+function getLocationAndProcess(file, videoFile) {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -135,26 +142,26 @@ function getLocationAndProcess(file) {
                     .then(response => response.json())
                     .then(data => {
                         const address = data.display_name || `Lat: ${lat}, Lon: ${lon}`;
-                        addTimestampAndUpload(file, address);
+                        addTimestampAndUpload(file, videoFile, address);
                     })
                     .catch(err => {
                         console.error("Gagal mendapatkan alamat:", err);
-                        addTimestampAndUpload(file, `Lat: ${lat}, Lon: ${lon} (Gagal memuat alamat)`);
+                        addTimestampAndUpload(file, videoFile, `Lat: ${lat}, Lon: ${lon} (Gagal memuat alamat)`);
                     });
             },
             (error) => {
                 console.error("Gagal mendapatkan GPS:", error);
-                addTimestampAndUpload(file, "Lokasi tidak ditemukan (Pastikan GPS aktif)");
+                addTimestampAndUpload(file, videoFile, "Lokasi tidak ditemukan (Pastikan GPS aktif)");
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     } else {
-        addTimestampAndUpload(file, "Browser tidak mendukung GPS");
+        addTimestampAndUpload(file, videoFile, "Browser tidak mendukung GPS");
     }
 }
 
-function addTimestampAndUpload(file, locationText) {
-    submitButton.textContent = 'Mengompres Gambar...';
+function addTimestampAndUpload(file, videoFile, locationText) {
+    submitButton.textContent = 'Mengompres Foto...';
     const reader = new FileReader();
     reader.onload = function(event) {
         const img = new Image();
@@ -250,58 +257,76 @@ function addTimestampAndUpload(file, locationText) {
 
             const serialNumber = document.getElementById('serialNumber').value;
             const customFileName = `STO-${facilityFilename}_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.jpg`;
-            
             const base64Data = canvas.toDataURL('image/jpeg', 0.7);
-            
-            const formData = {
-                facility: selectedFacility,
-                jenisAsset: jenisAsset,
-                serialNumber: serialNumber,
-                deviceId: document.getElementById('deviceId').value,
-                kondisi: document.getElementById('kondisi').value,
-                fileData: base64Data,
-                mimeType: 'image/jpeg',
-                fileName: customFileName
+
+            const sendData = (videoBase64 = null) => {
+                const formData = {
+                    facility: selectedFacility,
+                    jenisAsset: jenisAsset,
+                    serialNumber: serialNumber,
+                    deviceId: document.getElementById('deviceId').value,
+                    kondisi: document.getElementById('kondisi').value,
+                    fileData: base64Data,
+                    mimeType: 'image/jpeg',
+                    fileName: customFileName
+                };
+
+                if (videoBase64) {
+                    formData.videoData = videoBase64;
+                    formData.videoMimeType = videoFile.type;
+                    formData.videoFileName = `STO-${facilityFilename}_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-video.mp4`;
+                }
+
+                submitButton.textContent = 'Mengirim data ke Server...';
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(formData),
+                    headers: { "Content-Type": "text/plain" }
+                })
+                .then(response => {
+                     if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
+                     return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        statusDiv.textContent = data.message;
+                        statusDiv.className = 'success';
+                        
+                        const currentFacility = document.querySelector('input[name="facility"]:checked').value;
+                        form.reset();
+                        const radios = document.getElementsByName('facility');
+                        for(const r of radios) {
+                            if(r.value === currentFacility) r.checked = true;
+                        }
+                        jenisAssetLainnyaDiv.style.display = 'none';
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error detail:', error);
+                    statusDiv.textContent = 'Gagal mengirim: ' + error.message + '. Coba refresh halaman.';
+                    statusDiv.className = 'error';
+                })
+                .finally(() => {
+                    statusDiv.style.display = 'block';
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                });
             };
 
-            submitButton.textContent = 'Mengirim data...';
+            if (videoFile) {
+                submitButton.textContent = 'Memproses Video...';
+                const vidReader = new FileReader();
+                vidReader.onload = function(ve) {
+                    sendData(ve.target.result);
+                };
+                vidReader.readAsDataURL(videoFile);
+            } else {
+                sendData();
+            }
 
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(formData),
-                headers: { "Content-Type": "text/plain" }
-            })
-            .then(response => {
-                    if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
-                    return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    statusDiv.textContent = data.message;
-                    statusDiv.className = 'success';
-                    
-                    const currentFacility = document.querySelector('input[name="facility"]:checked').value;
-                    form.reset();
-                    const radios = document.getElementsByName('facility');
-                    for(const r of radios) {
-                        if(r.value === currentFacility) r.checked = true;
-                    }
-                    
-                    jenisAssetLainnyaDiv.style.display = 'none';
-                } else {
-                    throw new Error(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error detail:', error);
-                statusDiv.textContent = 'Gagal mengirim: ' + error.message + '. Coba refresh halaman.';
-                statusDiv.className = 'error';
-            })
-            .finally(() => {
-                statusDiv.style.display = 'block';
-                submitButton.disabled = false;
-                submitButton.textContent = 'Submit';
-            });
         }
         img.src = event.target.result;
     }
