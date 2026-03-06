@@ -10,7 +10,7 @@
 
 
 ## 🛠️ Framework &amp; Tech Stack
-```text
+```
 Frontend (Client-Side)
 ├── 🌐 Core UI & Logic
 │   ├── HTML5 (Semantic & Mobile Camera Capture)
@@ -40,4 +40,4 @@ Backend & Storage (Serverless Architecture)
     └── Google Drive (Image & Video file storage)
 
 Deployment & Hosting
-└── 🚀 GitHub Pages (Static web hosting)
+└── 🚀 GitHub Pages (Static web hosting)```
