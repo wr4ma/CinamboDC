@@ -1,5 +1,5 @@
 ```text
-📦 Fast-STO-Webform
+## 📦 Fast STO Webform
 ├── 📄 index.html      # Struktur utama halaman web & form UI
 ├── 🎨 style.css       # Desain, layout responsif, dan animasi
 ├── ⚙️ script.js       # Logika aplikasi (kamera, GPS, barcode, kompresi)
@@ -9,11 +9,11 @@
 
 ---
 
-**2. Untuk Tech Stack / Framework Tree:**
 
 ```markdown
 ```text
-## 🛠️ Framework & Tech Stack
+
+## 🛠️ Framework &amp; Tech Stack
 
 Frontend (Client-Side)
 ├── 🌐 Core UI & Logic
