@@ -1,5 +1,6 @@
-```text
 ## 📦 Fast STO Webform
+
+```text
 ├── 📄 index.html      # Struktur utama halaman web & form UI
 ├── 🎨 style.css       # Desain, layout responsif, dan animasi
 ├── ⚙️ script.js       # Logika aplikasi (kamera, GPS, barcode, kompresi)
@@ -7,14 +8,9 @@
 └── 📂 backend/        # (Opsional) Folder untuk menyimpan backup kode server
     └── 📜 Code.gs     # Script Google Apps Script (GAS) untuk catch backend
 
----
-
-
-```markdown
-```text
 
 ## 🛠️ Framework &amp; Tech Stack
-
+```text
 Frontend (Client-Side)
 ├── 🌐 Core UI & Logic
 │   ├── HTML5 (Semantic & Mobile Camera Capture)
