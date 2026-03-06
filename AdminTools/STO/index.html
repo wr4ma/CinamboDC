@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wr4ma ⚡ Fast STO Webform</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -78,8 +81,14 @@
         </div>
 
         <div class="form-group">
-            <label for="fotoAsset">Ambil Foto Asset</label>
-            <input type="file" id="fotoAsset" accept="image/*" capture required>
+            <label for="fotoAsset">Ambil Foto Asset (Wajib)</label>
+            <input type="file" id="fotoAsset" accept="image/*" capture="environment" required>
+        </div>
+
+        <div class="form-group">
+            <label for="videoAsset">Ambil Video Asset (Opsional)</label>
+            <input type="file" id="videoAsset" accept="video/*" capture="environment">
+            <small class="keterangan peringatan-video">Maksimal 20MB (Sangat disarankan durasi max 10-15 detik) agar tidak gagal dikirim.</small>
         </div>
         
         <button type="submit" id="submitButton">Submit</button>
@@ -103,17 +112,26 @@
                     <li><strong>Jenis Asset:</strong> Pilih dari daftar atau ketik manual.</li>
                     <li><strong>Serial Number:</strong> Gunakan tombol scan (ikon pembidik) atau ketik manual.</li>
                     <li><strong>Device ID:</strong> Isi jika ada, atau tanda strip (-) jika kosong.</li>
-                    <li><strong>Foto:</strong> Ambil foto aset. Data waktu dan lokasi akan otomatis ditambahkan.</li>
+                    <li><strong>Foto:</strong> Wajib. Tanggal, jam, dan lokasi otomatis ditambahkan.</li>
+                    <li><strong>Video (Baru):</strong> Opsional. Pastikan video berdurasi pendek agar tidak gagal upload.</li>
                 </ul>
             </div>
             
             <div class="modal-section">
                 <h2>🛠️ Changelog (Riwayat Fitur)</h2>
                 <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.8 (Terbaru)</div>
+                    <div class="changelog-date">Versi 1.9 (Terbaru)</div>
+                    <ul>
+                        <li>Penambahan opsi <strong>Ambil Video Asset</strong> (Opsional).</li>
+                        <li>Pembaruan sistem pengiriman data untuk mengakomodasi file video berukuran besar (Max 20MB).</li>
+                        <li>Update Framework Ke Yang lebih baru agar lebih responsive.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item">
+                    <div class="changelog-date">Versi 1.8</div>
                     <ul>
                         <li>Penambahan pilihan Facility (Cinambo RDC / DC).</li>
-                        <li>Pilihan Facility tidak akan reset setelah submit.</li>
+                        <li>Fitur "Remember Selection" untuk Facility (Pilihan tidak reset setelah submit).</li>
                     </ul>
                 </div>
                 <div class="changelog-item">
