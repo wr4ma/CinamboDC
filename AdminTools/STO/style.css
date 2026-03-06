@@ -103,7 +103,7 @@ label {
     border-radius: 50%; background: white;
 }
 
-input[type="text"], select, button { 
+input[type="text"], input[type="file"], select, button { 
     width: 100%; 
     padding: 15px; 
     border-radius: 8px; 
@@ -163,6 +163,7 @@ input:focus, select:focus {
 .success { background-color: #1b4b35; color: #a7e7c8; border: 1px solid #28a745; }
 .error { background-color: #492228; color: #f8d7da; border: 1px solid #dc3545; }
 .keterangan { color: var(--text-secondary); font-size: 12px; display: block; margin-top: 8px; font-style: italic; }
+.peringatan-video { color: #e94560; font-weight: bold; }
 
 .modal {
     display: none; 
@@ -224,7 +225,6 @@ input:focus, select:focus {
 .modal li { margin-bottom: 5px; font-size: 0.9em; }
 .changelog-item { margin-bottom: 10px; }
 .changelog-date { font-size: 0.8em; color: var(--secondary-color); font-weight: bold; }
-.modal-footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: var(--text-secondary); border-top: 1px solid var(--primary-color); padding-top: 15px; }
 .main-footer { text-align: center; margin-top: 40px; margin-bottom: 20px; font-size: 0.9em; color: var(--text-secondary); }
 
 .wr4ma-link {
