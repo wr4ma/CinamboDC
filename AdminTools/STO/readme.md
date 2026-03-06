@@ -9,8 +9,8 @@
     └── 📜 Code.gs     # Script Google Apps Script (GAS) untuk catch backend
 
 
-## 🛠️ Framework &amp; Tech Stack
-```
+## 🛠️ Framework & Tech Stack
+```text
 Frontend (Client-Side)
 ├── 🌐 Core UI & Logic
 │   ├── HTML5 (Semantic & Mobile Camera Capture)
