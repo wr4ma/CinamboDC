@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFv6rbkl9OpT0SVOXnhL1nBf_ZUr8dGn17cEkjmExfg_BE3rHHqsaiSxvqo6sVrsYKqw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvSl1qqh2SmvBQ59rr6MSA053wOpBQmpu-cEhuDP5cC1UWSrjC158cV-ZOgPSlNH9Bzg/exec";
 
 const form = document.getElementById('opnameForm');
 const submitButton = document.getElementById('submitButton');
