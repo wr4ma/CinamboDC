@@ -86,9 +86,9 @@
         </div>
 
         <div class="form-group">
-            <label for="videoAsset">Ambil Video Asset (Opsional)</label>
-            <input type="file" id="videoAsset" accept="video/*" capture="environment">
-            <small class="keterangan peringatan-video">Maksimal 20MB (Sangat disarankan durasi max 10-15 detik) agar tidak gagal dikirim.</small>
+            <label for="videoAsset">Upload Video Asset (Opsional)</label>
+            <input type="file" id="videoAsset" accept="video/*">
+            <small class="keterangan peringatan-video">Maksimal 20MB. (Silakan rekam terlebih dahulu menggunakan aplikasi Timestamp Cam, lalu upload file videonya di sini).</small>
         </div>
         
         <button type="submit" id="submitButton">Submit</button>
@@ -112,8 +112,8 @@
                     <li><strong>Jenis Asset:</strong> Pilih dari daftar atau ketik manual.</li>
                     <li><strong>Serial Number:</strong> Gunakan tombol scan (ikon pembidik) atau ketik manual.</li>
                     <li><strong>Device ID:</strong> Isi jika ada, atau tanda strip (-) jika kosong.</li>
-                    <li><strong>Foto:</strong> Wajib. Tanggal, jam, dan lokasi otomatis ditambahkan.</li>
-                    <li><strong>Video (Baru):</strong> Opsional. Pastikan video berdurasi pendek agar tidak gagal upload.</li>
+                    <li><strong>Foto:</strong> Wajib. Tanggal, jam, dan lokasi otomatis ditambahkan ke dalam frame foto.</li>
+                    <li><strong>Video:</strong> Opsional. Rekam video menggunakan aplikasi Timestamp eksternal, lalu upload file nya ke form ini. Nama file akan otomatis disesuaikan dengan data asset.</li>
                 </ul>
             </div>
             
@@ -122,8 +122,9 @@
                 <div class="changelog-item">
                     <div class="changelog-date">Versi 1.9 (Terbaru)</div>
                     <ul>
-                        <li>Penambahan opsi <strong>Ambil Video Asset</strong> (Opsional).</li>
-                        <li>Pembaruan sistem pengiriman data untuk mengakomodasi file video berukuran besar (Max 20MB).</li>
+                        <li>Penambahan opsi <strong>Upload Video Asset</strong> (Opsional).</li>
+                        <li>Sistem otomatis merename file video yang diupload menyesuaikan data asset (Jenis, SN, Facility, Tanggal) untuk kerapian data.</li>
+                        <li>Pembaruan sistem pengiriman data untuk file video berukuran besar (Max 20MB).</li>
                         <li>Update Framework Ke Yang lebih baru agar lebih responsive.</li>
                     </ul>
                 </div>
@@ -150,8 +151,7 @@
                 <div class="changelog-item">
                     <div class="changelog-date">Versi 1.4</div>
                     <ul>
-                        <li>Perubahan format Timestamp menjadi: <code>HH:MM | DD Bulan YYYY</code>.</li>
-                        <li>Perubahan jenis font pada foto agar lebih mudah dibaca.</li>
+                        <li>Perubahan format Timestamp foto menjadi: <code>HH:MM | DD Bulan YYYY</code>.</li>
                     </ul>
                 </div>
                 <div class="changelog-item">
@@ -159,12 +159,6 @@
                     <ul>
                         <li>Penambahan fitur Auto-Lokasi pada watermark foto.</li>
                         <li>Optimasi kompresi gambar & perbaikan sistem upload.</li>
-                    </ul>
-                </div>
-                <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.2</div>
-                    <ul>
-                        <li>Penambahan opsi "Handy Talky", kolom "Device ID", dan "Kondisi".</li>
                     </ul>
                 </div>
             </div>

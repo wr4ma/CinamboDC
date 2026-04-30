@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjenDVI2raM5lr6Up6QREmfTkeS8ywsmbiaVFg4IG-fZGX3S00LwoN-o_aUtAQk0em5A/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFv6rbkl9OpT0SVOXnhL1nBf_ZUr8dGn17cEkjmExfg_BE3rHHqsaiSxvqo6sVrsYKqw/exec";
 
 const form = document.getElementById('opnameForm');
 const submitButton = document.getElementById('submitButton');
@@ -256,7 +256,8 @@ function addTimestampAndUpload(file, videoFile, locationText) {
             }
 
             const serialNumber = document.getElementById('serialNumber').value;
-            const customFileName = `STO-${facilityFilename}_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.jpg`;
+            
+            const customPhotoFileName = `STO-${facilityFilename}_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.jpg`;
             const base64Data = canvas.toDataURL('image/jpeg', 0.7);
 
             const sendData = (videoBase64 = null) => {
@@ -268,13 +269,16 @@ function addTimestampAndUpload(file, videoFile, locationText) {
                     kondisi: document.getElementById('kondisi').value,
                     fileData: base64Data,
                     mimeType: 'image/jpeg',
-                    fileName: customFileName
+                    fileName: customPhotoFileName
                 };
 
                 if (videoBase64) {
+                    const videoExt = videoFile.name.split('.').pop() || 'mp4';
+                    const customVideoFileName = `STO-${facilityFilename}_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-.${videoExt}`;
+
                     formData.videoData = videoBase64;
-                    formData.videoMimeType = videoFile.type;
-                    formData.videoFileName = `STO-${facilityFilename}_${jenisAsset}-${serialNumber}-${formattedDateFilename}_wr4ma-video.mp4`;
+                    formData.videoMimeType = videoFile.type || `video/${videoExt}`;
+                    formData.videoFileName = customVideoFileName; 
                 }
 
                 submitButton.textContent = 'Mengirim data ke Server...';
@@ -317,7 +321,7 @@ function addTimestampAndUpload(file, videoFile, locationText) {
             };
 
             if (videoFile) {
-                submitButton.textContent = 'Memproses Video...';
+                submitButton.textContent = 'Memproses Video (Harap Tunggu)...';
                 const vidReader = new FileReader();
                 vidReader.onload = function(ve) {
                     sendData(ve.target.result);
