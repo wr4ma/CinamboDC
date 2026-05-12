@@ -1,180 +1,110 @@
+
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wr4ma ⚡ Fast STO Webform</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-    
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-    <link rel="stylesheet" href="style.css">
+    <title>Farewell - Mode Mager, Fast STO & Others</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712; /* gray-950 */
+            color: #d1d5db; /* gray-300 */
+        }
+        .quote-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #f97316, #db2777);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(55, 65, 81, 0.4);
+        }
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        .animate-sunset {
+            animation: pulse-soft 3s infinite ease-in-out;
+        }
+    </style>
 </head>
-<body>
-    <h1>⚡ Fast STO Webform</h1>
-    
-    <div class="guide-btn-container">
-        <button id="guideBtn" type="button">📖 Panduan & Changelog</button>
-    </div>
+<!-- Perbaikan: Menghilangkan overflow-hidden agar bisa di-scroll -->
+<body class="min-h-screen w-full relative overflow-x-hidden selection:bg-orange-500/30 selection:text-orange-100 flex flex-col items-center">
 
-    <form id="opnameForm">
-        <div class="form-group">
-            <label>Facility (Lokasi)</label>
-            <div class="radio-group">
-                <label class="radio-container">Cinambo RDC
-                    <input type="radio" name="facility" value="Cinambo RDC" required>
-                    <span class="checkmark"></span>
-                </label>
-                <label class="radio-container">Cinambo DC
-                    <input type="radio" name="facility" value="Cinambo DC" checked required>
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-        </div>
+    <!-- Latar Belakang Sunset Glow yang tetap di posisinya -->
+    <div class="fixed top-[-10%] left-1/2 -translate-x-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-gradient-to-br from-orange-600/20 via-rose-600/10 to-purple-600/20 rounded-full blur-[80px] sm:blur-[120px] pointer-events-none z-0"></div>
 
-        <div class="form-group">
-            <label for="jenisAsset">Jenis Asset</label>
-            <select id="jenisAsset" name="jenisAsset" required>
-                <option value="">-- Pilih Jenis Asset --</option>
-                <option value="PDA">PDA</option>
-                <option value="Printer">Printer</option>
-                <option value="Printer Thermal">Printer Thermal</option>
-                <option value="Laptop">Laptop</option>
-                <option value="Handheld Scanner">Handheld Scanner</option>
-                <option value="PC Desktop">PC Desktop</option>
-                <option value="Handy Talky">Handy Talky</option>
-                <option value="Lainnya">Lainnya</option>
-            </select>
-            <div id="jenisAssetLainnyaDiv" style="display: none; margin-top: 15px;">
-                <label for="jenisAssetLainnya">Ketik Jenis Asset Lainnya</label>
-                <input type="text" id="jenisAssetLainnya" name="jenisAssetLainnya">
-            </div>
-        </div>
+    <!-- Container Utama dengan padding atas & bawah agar tidak terpotong -->
+    <main class="relative z-10 w-full max-w-2xl px-6 py-12 sm:py-20 flex flex-col items-center">
         
-        <div class="form-group">
-            <label for="serialNumber">Serial Number</label>
-            <div class="input-group">
-                <input type="text" id="serialNumber" name="serialNumber" required placeholder="Ketik atau Scan...">
-                <button type="button" class="scan-trigger-btn" id="openScanBtn" title="Scan Barcode">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 5h4v2H5v4H3V5h2zm4 14H5v-4H3v4h2v2h4v-2zm10-14h-4v2h4v4h2V5h-2zm0 10h2v4h-2v2h-4v-2h4v-4zM7 9h10v6H7V9z"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="deviceId">Device ID</label>
-            <input type="text" id="deviceId" name="deviceId" required>
-            <small class="keterangan">isi - jika Device ID tidak ada atau sudah pernah diinput</small>
-        </div>
-
-        <div class="form-group">
-            <label for="kondisi">Kondisi</label>
-            <select id="kondisi" name="kondisi" required>
-                <option value="Bagus">Bagus</option>
-                <option value="Rusak">Rusak</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="fotoAsset">Ambil Foto Asset (Wajib)</label>
-            <input type="file" id="fotoAsset" accept="image/*" capture="environment" required>
-        </div>
-
-        <div class="form-group">
-            <label for="videoAsset">Upload Video Asset (Opsional)</label>
-            <input type="file" id="videoAsset" accept="video/*">
-            <small class="keterangan peringatan-video">Maksimal 20MB. (Silakan rekam terlebih dahulu menggunakan aplikasi Timestamp Cam, lalu upload file videonya di sini).</small>
-        </div>
-        
-        <button type="submit" id="submitButton">Submit</button>
-    </form>
-    <div id="status"></div>
-
-    <div class="main-footer">
-        Made With ❤️ by <a href="https://www.instagram.com/wr4ma/" target="_blank" class="wr4ma-link">wr4ma</a>
-    </div>
-
-    <div id="guideModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeGuideModal">&times;</span>
-            <div class="modal-section">
-                <h2>📚 Panduan Cara STO</h2>
-                <ul>
-                    <li><strong>Sebelum Memulai Pastikan:</strong> Asset Sudah Disiapkan.</li>
-                    <li><strong>Pilih Facility:</strong> Tentukan lokasi (RDC/DC) di bagian atas.</li>
-                    <li><strong>Pastikan GPS Aktif:</strong> Pastikan GPS/Lokasi di hp Aktif sebelum memulai STO agar lokasi tercatat.</li>
-                    <li><strong>Izin Lokasi:</strong> Klik "Allow/Izinkan" saat browser meminta akses lokasi.</li>
-                    <li><strong>Jenis Asset:</strong> Pilih dari daftar atau ketik manual.</li>
-                    <li><strong>Serial Number:</strong> Gunakan tombol scan (ikon pembidik) atau ketik manual.</li>
-                    <li><strong>Device ID:</strong> Isi jika ada, atau tanda strip (-) jika kosong.</li>
-                    <li><strong>Foto:</strong> Wajib. Tanggal, jam, dan lokasi otomatis ditambahkan ke dalam frame foto.</li>
-                    <li><strong>Video:</strong> Opsional. Rekam video menggunakan aplikasi Timestamp eksternal, lalu upload file nya ke form ini. Nama file akan otomatis disesuaikan dengan data asset.</li>
-                </ul>
-            </div>
+        <div class="glass-panel w-full rounded-3xl p-8 sm:p-14 text-center shadow-2xl">
             
-            <div class="modal-section">
-                <h2>🛠️ Changelog (Riwayat Fitur)</h2>
-                <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.9 (Terbaru)</div>
-                    <ul>
-                        <li>Penambahan opsi <strong>Upload Video Asset</strong> (Opsional).</li>
-                        <li>Sistem otomatis merename file video yang diupload menyesuaikan data asset (Jenis, SN, Facility, Tanggal) untuk kerapian data.</li>
-                        <li>Pembaruan sistem pengiriman data untuk file video berukuran besar (Max 20MB).</li>
-                        <li>Update Framework Ke Yang lebih baru agar lebih responsive.</li>
-                    </ul>
+            <!-- Icon -->
+            <div class="flex justify-center mb-8">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center shadow-lg shadow-orange-500/20 animate-sunset">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 10V2"/>
+                        <path d="m4.93 10.93 1.41 1.41"/>
+                        <path d="M2 18h2"/>
+                        <path d="M20 18h2"/>
+                        <path d="m19.07 10.93-1.41 1.41"/>
+                        <path d="M22 22H2"/>
+                        <path d="m8 6 4-4 4 4"/>
+                        <path d="M16 18a4 4 0 0 0-8 0"/>
+                    </svg>
                 </div>
-                <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.8</div>
-                    <ul>
-                        <li>Penambahan pilihan Facility (Cinambo RDC / DC).</li>
-                        <li>Fitur "Remember Selection" untuk Facility (Pilihan tidak reset setelah submit).</li>
-                    </ul>
-                </div>
-                <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.7</div>
-                    <ul>
-                        <li>Penghapusan fitur Flash untuk stabilitas kamera.</li>
-                        <li>Perubahan ikon tombol scan menjadi logo Viewfinder.</li>
-                    </ul>
-                </div>
-                <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.6</div>
-                    <ul>
-                        <li>Penambahan fitur Scan Barcode (In-App) pada Serial Number.</li>
-                    </ul>
-                </div>
-                <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.4</div>
-                    <ul>
-                        <li>Perubahan format Timestamp foto menjadi: <code>HH:MM | DD Bulan YYYY</code>.</li>
-                    </ul>
-                </div>
-                <div class="changelog-item">
-                    <div class="changelog-date">Versi 1.3</div>
-                    <ul>
-                        <li>Penambahan fitur Auto-Lokasi pada watermark foto.</li>
-                        <li>Optimasi kompresi gambar & perbaikan sistem upload.</li>
-                    </ul>
+            </div>
+
+            <!-- Judul -->
+            <h1 class="text-3xl sm:text-4xl font-semibold text-white mb-4 tracking-tight">
+                Thank you for everything.
+            </h1>
+            
+            <p class="text-lg font-medium mb-8">
+                <span class="text-gradient">Mode Mager, Fast STO, and other projects</span> are officially closing down.
+            </p>
+
+            <!-- Pesan Utama -->
+            <div class="space-y-5 text-gray-400 text-base sm:text-lg leading-relaxed">
+                <p>
+                    Building and maintaining these projects has been an absolute privilege. What started as simple ideas grew into something special, and none of it would have been possible without your support.
+                </p>
+                <p>
+                    Thank you to everyone who used the tools, shared their feedback, and walked this journey with me. Your enthusiasm is what kept everything running for as long as it did.
+                </p>
+            </div>
+
+            <!-- Divider -->
+            <div class="w-16 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent mx-auto my-10"></div>
+
+            <!-- Kata-kata Perpisahan Kustom -->
+            <div class="flex flex-col items-center justify-center">
+                <p class="quote-font text-xl sm:text-2xl text-gray-300 leading-relaxed italic mb-8">
+                    "I think it’s time for me to step back and find some stillness. I sincerely apologize for all the noise I make. I’m taking my leave to find better clarity."
+                </p>
+                
+                <div class="text-gray-400 font-medium space-y-1">
+                    <p>Your Beloved Partner,</p>
+                    <p class="text-white text-lg font-semibold tracking-wide mt-2">Will's.</p>
+                    <p class="text-orange-400 text-sm tracking-widest uppercase mt-4">Peace Out ;)</p>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="scannerModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeScannerModal">&times;</span>
-            <h2>📷 Pindai Barcode</h2>
-            <div id="scanner-viewport"></div>
-            <p id="scanner-status" style="font-size: 0.8em; color: gray; text-align: center;">Arahkan kamera ke barcode/QR Code</p>
-            <button type="button" id="stopScanBtn">Batalkan</button>
+        
+        <!-- Footer Tambahan -->
+        <div class="mt-12 text-gray-600 text-xs tracking-widest uppercase opacity-50">
+            End of an era • 2024
         </div>
-    </div>
+    </main>
 
-    <script src="script.js"></script>
 </body>
 </html>
